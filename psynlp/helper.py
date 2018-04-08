@@ -94,22 +94,6 @@ def eliminate_prefix(v, u):
 
 # Iterative longest contiguous sequence. No one character matchings
 def lcs(s1, s2):
-    longest = ""
-    i = 0
-    for x in s1:
-        if re.search(x, s2):
-            s = x
-            while re.search(s, s2):
-                if len(s) > len(longest):
-                    longest = s
-                if i + len(s) == len(s1):
-                    break
-            s = s1[i:i + len(s) + 1]
-        i += 1
-    return longest
-
-
-def lcs(s1, s2):
     s1 = s1.replace('(', '').replace(')', '')
     s2 = s2.replace('(', '').replace(')', '')
     longest = ""
