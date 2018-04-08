@@ -29,7 +29,7 @@ class FST(nx.DiGraph):
         states = self.states()
 
         if states:
-            return max(states)+1
+            return max(states) + 1
         else:
             return 1
 

@@ -3,14 +3,14 @@ Contains helper functions used by different submodules
 """
 
 import os
-import operator
 import re
 import time
-
+import operator
 import networkx as nx
 import matplotlib.pyplot as plt
 from ..psynlp.fca import FCA
 from ..psynlp.inflection_deterministic import deterministic_pac
+
 
 
 def align(lemma, form):
@@ -19,16 +19,19 @@ def align(lemma, form):
                  len(aform) - len(aform.lstrip('_')))
     tspace = max(len(alemma[::-1]) - len(alemma[::-1].lstrip('_')),
                  len(aform[::-1]) - len(aform[::-1].lstrip('_')))
-    return alemma[0:lspace], alemma[lspace:len(alemma)-tspace], alemma[len(alemma)-tspace:], aform[0:lspace], aform[lspace:len(alemma)-tspace], aform[len(alemma)-tspace:]
+    return alemma[0:lspace], alemma[lspace:len(alemma) - tspace], alemma[len(
+        alemma) - tspace:], aform[0:lspace], aform[lspace:len(alemma) - tspace], aform[len(alemma) - tspace:]
 
 
 def levenshtein(s, t, inscost=1.0, delcost=1.0, substcost=1.0):
     """Recursive implementation of Levenshtein, with alignments returned."""
     def lrec(spast, tpast, srem, trem, cost):
         if len(srem) == 0:
-            return spast + len(trem) * '_', tpast + trem, '', '', cost + len(trem)
+            return spast + len(trem) * '_', tpast + \
+                trem, '', '', cost + len(trem)
         if len(trem) == 0:
-            return spast + srem, tpast + len(srem) * '_', '', '', cost + len(srem)
+            return spast + srem, tpast + \
+                len(srem) * '_', '', '', cost + len(srem)
 
         addcost = 0
         if srem[0] != trem[0]:
@@ -92,10 +95,7 @@ def eliminate_prefix(v, u):
     return(w)
 
 # Iterative longest contiguous sequence. No one character matchings
-
-
 def lcs(s1, s2):
-    print(s1, s2)
     s1 = s1.replace('(', '').replace(')', '')
     s2 = s2.replace('(', '').replace(')', '')
     longest = ""
@@ -305,9 +305,9 @@ def init_concept_from_wordpairs(wordpairs):
         if "*" not in source and "*" not in target:
             mutations = iterLCS({'source': source, 'target': target})
             for addition in mutations['added']:
-                concept.add_relation("insert_"+addition, source)
+                concept.add_relation("insert_" + addition, source)
             for deletion in mutations['deleted']:
-                concept.add_relation("delete_"+deletion, source)
+                concept.add_relation("delete_" + deletion, source)
     return concept
 
 

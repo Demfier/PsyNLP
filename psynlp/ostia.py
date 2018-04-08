@@ -22,7 +22,7 @@ class OSTIA(object):
         :param T: An input*output mapping
         """
 
-        if type(T[0]) is tuple:
+        if isinstance(T[0], tuple):
             self.graph = self.form_io_digraph(T)
         else:
             self.graph = self.form_input_diagraph(T)
@@ -321,8 +321,8 @@ class OSTIA(object):
         prediction = ''
 
         j = 0
-        for i in range(0, len(fitting_path)-1):
-            edge = graph[fitting_path[i]][fitting_path[i+1]]
+        for i in range(0, len(fitting_path) - 1):
+            edge = graph[fitting_path[i]][fitting_path[i + 1]]
             if edge['input'] == edge['output'] and j < len(source):
                 prediction += source[j]
                 j += 1
