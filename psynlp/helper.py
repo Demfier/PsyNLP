@@ -3,10 +3,11 @@ Contains helper functions used by different submodules
 """
 
 import os
+import operator
 import re
 import networkx as nx
 import matplotlib.pyplot as plt
-
+from ..psynlp.fca import FCA
 
 def align(lemma, form):
     alemma, aform, _ = levenshtein(lemma, form)
@@ -264,3 +265,69 @@ def fetch_input_output_pairs(language='english', quality='low'):
     print("Providing all words in structured manner, to OSTIA")
     T = sorted(T, key=operator.itemgetter(0))
     return T
+
+def get_io_chunks(s1, s2):
+    chunks = []
+    while len(s1) != 0 or len(s2) != 0 :
+        if len(s1) != 0 and len(s2) != 0:
+            l = lcs(s1, s2)
+            print(s1, s2, l)
+            if s1.find(l) == 0 and l:
+                # chunks.append((l, l))
+                for c in list(l):
+                    chunks.append((c, c))
+                s1 = s1[len(l):]
+                s2 = s2[len(l):]
+            elif l:
+                if s2.find(l) == 0:
+                    chunks.append((s1[0], ''))
+                    s1 = s1[1:]
+                else:
+                    for c in list(s2[:s2.find(l)]):
+                        chunks.append(('', c))
+                    # chunks.append(('', l))
+                    s2 = s2[s2.find(l):]
+            else:
+                for c in list(s1):
+                    chunks.append((c, ''))
+                # chunks.append((s1, ''))
+                s1 = ''
+        elif len(s1)!=0:
+            for c in list(s1):
+                chunks.append((c, ''))
+            # chunks.append((s1, ''))
+            s1 = ''
+        else:
+            for c in list(s2):
+                  chunks.append(('', c))
+            # chunks.append(('', s2))
+            s2 = ''
+    return chunks
+
+def init_concept_from_wordpairs(wordpairs):
+    concept = FCA()
+    for (source, target) in wordpairs:
+        if not "*" in source and not "*" in target:
+            mutations = iterLCS({'source': source, 'target': target})
+            for addition in mutations['added']:
+                concept.add_relation("insert_"+addition, source)
+            for deletion in mutations['deleted']:
+                concept.add_relation("delete_"+deletion, source)
+    return concept
+
+def iterLCS(pdf):
+    sw1 = pdf['source']
+    sw2 = pdf['target']
+    longList = []
+    while True:
+        tempVal = lcs(sw1,sw2)
+        if len(tempVal)  <= 1:
+            break
+
+    longList.append(tempVal)
+    sw1 = sw1.replace(tempVal,'#',1)
+    sw2 = sw2.replace(tempVal,'!',1)
+    pdf['common'] = longList
+    pdf['deleted'] = [item for item in sw1.split('#') if len(item) > 0]
+    pdf['added'] = [item for item in sw2.split('!') if len(item) > 0]
+    return pdf

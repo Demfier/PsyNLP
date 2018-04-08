@@ -8,8 +8,8 @@ For theory refer:
 > "Conceptual Exploration", Bernhard Ganter & Sergei Obiedkov
     - https://link.springer.com/content/pdf/10.1007%2F978-3-662-49291-8.pdf
 """
-import oracle
-from helper import *
+from ..psynlp.oracle import *
+from ..psynlp.helper import *
 import networkx as nx
 
 
