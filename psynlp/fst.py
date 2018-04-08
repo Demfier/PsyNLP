@@ -17,7 +17,7 @@ class FST(nx.DiGraph):
         """
 
         if newest_state is None:
-          newest_state = self.new_state()
+            newest_state = self.new_state()
         self.add_node(newest_state, type='state')
         return(newest_state)
 
@@ -38,7 +38,8 @@ class FST(nx.DiGraph):
         :return states: All states present in the Transducer
         """
 
-        states = [node for (node, data) in self.nodes(data=True) if 'type' in data and data['type'] == 'state']
+        states = [node for (node, data) in self.nodes(
+            data=True) if 'type' in data and data['type'] == 'state']
         return(states)
 
     def add_metadata(self, metadata):
@@ -54,7 +55,8 @@ class FST(nx.DiGraph):
         :return metadatas: All metadata nodes present in the Transducer
         """
 
-        metadatas = [node for (node, data) in self.nodes(data=True) if data['type'] == 'metadata']
+        metadatas = [node for (node, data) in self.nodes(
+            data=True) if data['type'] == 'metadata']
         return(metadatas)
 
     def contextual_subgraph(self, metadatas=[]):
@@ -69,7 +71,8 @@ class FST(nx.DiGraph):
 
         for metadata in metadatas:
             try:
-                contextual_states = contextual_states.intersection(set(self[metadata]))
+                contextual_states = contextual_states.intersection(
+                    set(self[metadata]))
             except KeyError:
                 contextual_states = contextual_states
 
@@ -94,7 +97,7 @@ class FST(nx.DiGraph):
         edges = []
         states = self.states() + [0, -1]
         for edge in self.edges:
-          node_1, node_2 = edge
-          if node_1 in states and node_2 in states:
-            edges.append(edge)
-        return(edges)
+            node_1, node_2 = edge
+            if node_1 in states and node_2 in states:
+                edges.append(edge)
+        return edges
