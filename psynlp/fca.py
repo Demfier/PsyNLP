@@ -554,10 +554,8 @@ def init_concept_from_wordpairs(wordpairs):
 def init_dataset(i=None):
     concept = Concept()
     if isinstance(i, str):
-        # wordpairs = dict((('run','running'), ('fly','flying'),
-        # ('sky','skying')))
         wordpairs = read_wordpairs(
-            '../daru-dataframe/spec/fixtures/' + i + '-train-high')
+            'data/' + i + '-train-high')
         for source in wordpairs:
             target = wordpairs[source]
             if "*" not in source and "*" not in target:
