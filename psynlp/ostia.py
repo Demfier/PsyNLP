@@ -8,8 +8,8 @@ For theory, refer:
     - https://pdfs.semanticscholar.org/9058/01c8e75daacb27d70ccc3c0b587411b6d213.pdf
 """
 
-from fst import FST
-from helper import is_prefixed_with, eliminate_prefix, eliminate_suffix, lcp, get_io_chunks
+from ..psynlp.fst import FST
+from ..psynlp.helper import is_prefixed_with, eliminate_prefix, eliminate_suffix, lcp, get_io_chunks
 
 
 class OSTIA(object):

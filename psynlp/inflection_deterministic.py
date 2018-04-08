@@ -2,9 +2,10 @@
 Pipelines for SIGMORPHON-2017 task of Universal Morphological Inflection.
 """
 
-from helper import parse_metadata_words, parse_metadata_fca, fetch_testing_data, inflect
-from ostia import OSTIA
 import pandas as pd
+from ..psynlp.ostia import OSTIA
+from ..psynlp.helper import parse_metadata_words, parse_metadata_fca, fetch_testing_data, inflect
+
 
 def deterministic_pac(concept):
     def generate_df(concept):

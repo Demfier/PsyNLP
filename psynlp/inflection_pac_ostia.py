@@ -2,9 +2,10 @@
 Pipelines for SIGMORPHON-2017 task of Universal Morphological Inflection.
 """
 
-from helper_methods import parse_metadata_fca, parse_metadata_words, fetch_testing_data, inflect
-from ostia import OSTIA
 import operator
+from ..psynlp.ostia import OSTIA
+from ..psynlp.helper import parse_metadata_fca, parse_metadata_words, fetch_testing_data, inflect
+
 
 def fetch_accuracy(language='english', quality='high'):
     pac = parse_metadata_fca(parse_metadata_words(language=language, quality=quality))

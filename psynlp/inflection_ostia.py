@@ -2,8 +2,9 @@
 Pipelines for SIGMORPHON-2017 task of Universal Morphological Inflection.
 """
 
-from ostia import OSTIA
-from helper import fetch_input_output_pairs, fetch_testing_data, levenshtein
+from ..psynlp.ostia import OSTIA
+from ..psynlp.helper import fetch_input_output_pairs, fetch_testing_data, levenshtein
+
 
 def fetch_accuracy(language='emglish', quality='high'):
     model = fetch_input_output_pairs(language=language, quality=quality)
