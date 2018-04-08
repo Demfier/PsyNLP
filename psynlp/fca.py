@@ -8,6 +8,7 @@ For theory refer:
 > "Conceptual Exploration", Bernhard Ganter & Sergei Obiedkov
     - https://link.springer.com/content/pdf/10.1007%2F978-3-662-49291-8.pdf
 """
+import oracle
 from helper import *
 import networkx as nx
 
@@ -57,8 +58,7 @@ class FCA(nx.Graph):
         else:
             objects = self[attribute_name]
 
-        objects = list(objects)
-        objects.sort()
+        objects = sorted(objects)
         return(objects)
 
     def attributes(self, object_name=None):
@@ -70,8 +70,7 @@ class FCA(nx.Graph):
         else:
             attributes = self[object_name]
 
-        attributes = list(attributes)
-        attributes.sort()
+        attributes = sorted(attributes)
         return(attributes)
 
     def objects_intent(self, object_names):
@@ -137,8 +136,7 @@ class FCA(nx.Graph):
         for attribute_subset in all_attribute_subsets:
             if set(attribute_subset) == self.attributes_superset(
                     attribute_subset):
-            matching_attribute_subsets.add(attribute_subset)
-
+                matching_attribute_subsets.add(attribute_subset)
         return(matching_attribute_subsets)
 
     def relations(self):
@@ -335,54 +333,6 @@ class FCA(nx.Graph):
 
         return(implications)
 
-    def is_member(self, hypothesis, attributes_subset):
-        attributes_subset = set(attributes_subset)
-        return(attributes_subset == self.attributes_superset(attributes_subset))
-
-    def generate_subset(self, any_set):
-        subset = set()
-        random.shuffle(any_set)
-        for element in any_set:
-            if random.random() > 0.5:
-                subset.add(element)
-        return(subset)
-
-    def generate_negative_counterexample(self, H):
-        i = 0
-        H_list = list(H)
-        try_index = set()
-
-        for antecedent_attrs, consequent_attrs in H_list:
-            if len(self.attributes_extent(set(consequent_attrs))) == 0:
-                try_index.add(i)
-            i += 1
-
-        while len(self.attributes_extent(set(random_consequent))) != 0:
-            random_implication = H_list[int(random.random() * len(H_list))]
-            random_antecedant, random_consequent = random_implication
-        return(self.attributes_superset(set(random_antecedant)))
-
-    def generate_positive_counterexample(self, H, M, li_times, is_member):
-        for i in range(int(li_times)):
-            X = self.generate_subset(M)
-            member = is_member(H, X)
-            model = self.is_model_of_implications(X, H)
-            if (member and not model) or (not member and model):
-                return(X)
-        return(True)
-
-    def is_approx_equivalent(self, is_member, epsilon=0.5, delta=0.5):
-        M = self.attributes()
-
-        def query_oracle(hypothesis):
-            self.nqueries = self.nqueries + 1
-            li_times = self.li_times(self.nqueries, epsilon, delta)
-            return(self.generate_positive_counterexample(hypothesis, M, li_times, is_member))
-        return(query_oracle)
-
-    def li_times(self, i, epsilon, delta):
-        return((1.0 / epsilon) * (i - (math.log(delta) / math.log(2))))
-
     def implications_not_respecting_attributes(
             self, attribute_names, implications):
         disrespectful_implications = set()
@@ -417,7 +367,7 @@ class FCA(nx.Graph):
             attribute_names = set(attribute_names)
 
         if attribute_names.intersection(antecedent_attrs) != antecedent_attrs and not is_member(
-                implications, attribute_names.intersection(antecedent_attrs)):
+                implications, attribute_names.intersection(antecedent_attrs), self.attributes_superset):
             return((tuple(sorted(antecedent_attrs)), tuple(sorted(consequent_attrs))))
 
     def clean_hypothesis(self, H):
@@ -437,7 +387,7 @@ class FCA(nx.Graph):
     def horn1(self, is_member, is_equivalent):
         H = set()
 
-        C = is_equivalent(H)
+        C, self.nqueries, self.pn_ratio = is_equivalent(H)
         while C is not True:
             # if some A->B belonging to H does not respect C: not(A doesnt
             # belong to C or B belongs to C)
@@ -476,7 +426,7 @@ class FCA(nx.Graph):
                             sorted(antecedent_attrs)), tuple(
                             sorted(consequent_attrs))))
 
-                C = is_equivalent(H)
+                C, self.nqueries, self.pn_ratio = is_equivalent(H)
                 # wait_till_user_responds = input("Press enter to go through
                 # next loop")
                 j = 0
@@ -497,29 +447,8 @@ class FCA(nx.Graph):
         H = self.clean_hypothesis(H)
         return(H)
 
-    def is_equivalent_probabilistic(self, H):
-        M = self.attributes()
-
-        for i in range(int(math.pow(2, len(self.attributes())))):
-            X = self.generate_subset(M)
-            member = self.is_member(H, X)
-            model = self.is_model_of_implications(X, H)
-            if (member and not model) or (not member and model):
-                return(X)
-        return(True)
-
-    def is_equivalent_deterministic(self, H):
-        M = self.attributes()
-
-        for X in self.all_subsets(M):
-            member = self.is_member(H, X)
-            model = self.is_model_of_implications(X, H)
-            if (member and not model) or (not member and model):
-                return(X)
-        return(True)
-
     def pac_basis(self, is_member, epsilon=0.8, delta=0.5):
-        return(self.horn1(is_member, self.is_approx_equivalent(is_member, epsilon, delta)))
+        return(self.horn1(is_member, oracle.is_approx_equivalent(is_member, self.attibutes(), self.nqueries, self.attributes_extent, self.attributes_superset, self.is_model_of_implications, self.pn_ratio, self.max_pn_ratio, epsilon, delta)))
 
 
 def generate_operations_for_a_wordpair(source, dest):
@@ -552,7 +481,7 @@ def init_concept_from_wordpairs(wordpairs):
 
 
 def init_dataset(i=None):
-    concept = Concept()
+    concept = FCA()
     if isinstance(i, str):
         wordpairs = read_wordpairs(
             'data/' + i + '-train-high')
@@ -564,105 +493,104 @@ def init_dataset(i=None):
                     concept.add_relation("insert_" + addition, source)
                 for deletion in mutations['deleted']:
                     concept.add_relation("delete_" + deletion, source)
-            elif i == 0:
-                concept.add_relation('Trollinger', '15C')
-                concept.add_relation('Trollinger', '16C')
+    elif i == 0:
+        concept.add_relation('Trollinger', '15C')
+        concept.add_relation('Trollinger', '16C')
 
-                concept.add_relation('Beaujolais', '15C')
-                concept.add_relation('Beaujolais', '16C')
-                concept.add_relation('Beaujolais', '17C')
+        concept.add_relation('Beaujolais', '15C')
+        concept.add_relation('Beaujolais', '16C')
+        concept.add_relation('Beaujolais', '17C')
 
-                concept.add_relation('Burgundy', '15C')
-                concept.add_relation('Burgundy', '16C')
-                concept.add_relation('Burgundy', '17C')
-                concept.add_relation('Burgundy', '18C')
-                concept.add_relation('Bordeaux', '15C')
-                concept.add_relation('Bordeaux', '16C')
-                concept.add_relation('Bordeaux', '17C')
-                concept.add_relation('Bordeaux', '18C')
-                concept.add_relation('Bordeaux', '19C')
+        concept.add_relation('Burgundy', '15C')
+        concept.add_relation('Burgundy', '16C')
+        concept.add_relation('Burgundy', '17C')
+        concept.add_relation('Burgundy', '18C')
+        concept.add_relation('Bordeaux', '15C')
+        concept.add_relation('Bordeaux', '16C')
+        concept.add_relation('Bordeaux', '17C')
+        concept.add_relation('Bordeaux', '18C')
+        concept.add_relation('Bordeaux', '19C')
 
-    concept.add_relation('Barolo', '16C')
-    concept.add_relation('Barolo', '17C')
-    concept.add_relation('Barolo', '18C')
-    concept.add_relation('Barolo', '19C')
+        concept.add_relation('Barolo', '16C')
+        concept.add_relation('Barolo', '17C')
+        concept.add_relation('Barolo', '18C')
+        concept.add_relation('Barolo', '19C')
 
-    concept.add_relation('Barbera', '16C')
-    concept.add_relation('Barbera', '17C')
-    concept.add_relation('Barbera', '18C')
+        concept.add_relation('Barbera', '16C')
+        concept.add_relation('Barbera', '17C')
+        concept.add_relation('Barbera', '18C')
 
-    concept.add_relation('Brunello', '17C')
-    concept.add_relation('Brunello', '18C')
-    concept.add_relation('Brunello', '19C')
+        concept.add_relation('Brunello', '17C')
+        concept.add_relation('Brunello', '18C')
+        concept.add_relation('Brunello', '19C')
 
-    concept.add_relation('Negroamaro', '17C')
-    concept.add_relation('Negroamaro', '18C')
-  elif i == 1:
-    relation = []
-    relation += [('Air Canada', 'Latin America'), ('Air Canada', 'Europe'),
-                ('Air Canada', 'Canada'), ('Air Canada', 'Asia Pacific'),
-                ('Air Canada', 'Middle East'), ('Air Canada', 'Africa'),
-                ('Air Canada', 'Mexicana'), ('Air Canada', 'Caribbean'),
-                ('Air Canada', 'United States')]
-    # Air New zealand relation
-    relation += [('Air New Zealand', 'Europe'),
-                ('Air New Zealand', 'Asia Pacific'),
-                ('Air New Zealand', 'United States')]
-    # All Nippon Airways relation
-    relation += [('All Nippon Airways', 'Europe'),
-                ('All Nippon Airways', 'Asia Pacific'),
-                ('All Nippon Airways', 'United States')]
-    # Ansett Australia relation
-    relation += [('Ansett Australia', 'Asia Pacific')]
-    # The Australian Airlines Group
-    relation += [('The Austrian Airlines Group', 'Europe'),
-                ('The Austrian Airlines Group', 'Canada'),
-                ('The Austrian Airlines Group', 'Asia Pacific'),
-                ('The Austrian Airlines Group', 'Middle East'),
-                ('The Austrian Airlines Group', 'Africa'),
-                ('The Austrian Airlines Group', 'United States')]
-    # British Midland relation
-    relation += [('British Midland', 'Europe')]
-    # Lufthansa relation
-    relation += [('Lufthansa', 'Latin America '), ('Lufthansa', 'Europe'),
-                ('Lufthansa', 'Canada'), ('Lufthansa', 'Asia Pacific'),
-                ('Lufthansa', 'Middle East'), ('Lufthansa', 'Africa'),
-                ('Lufthansa', 'Mexicana'), ('Lufthansa', 'United States')]
-    # Mexicana relation
-    relation += [('Mexicana', 'Latin America'), ('Mexicana', 'Canada'),
-                ('Mexicana', 'Mexicana'), ('Mexicana', 'Caribbean'),
-                ('Mexicana', 'United States')]
-    # Scandinavian Airlines relation
-    relation += [('Scandinavian Airlines', 'Latin America'),
-                ('Scandinavian Airlines', 'Europe'),
-                ('Scandinavian Airlines', 'Asia Pacific'),
-                ('Scandinavian Airlines', 'Africa'),
-                ('Scandinavian Airlines', 'United States')]
-    # Singapore Airlines relation
-    relation += [('Singapore Airlines', 'Europe'),
-                ('Singapore Airlines', 'Canada'),
-                ('Singapore Airlines', 'Asia Pacific'),
-                ('Singapore Airlines', 'Middle East'),
-                ('Singapore Airlines', 'Africa'),
-                ('Singapore Airlines', 'United States')]
-    # Thai Airways International
-    relation += [('Thai Airways International', 'Latin America'),
-                ('Thai Airways International', 'Europe'),
-                ('Thai Airways International', 'Asia Pacific'),
-                ('Thai Airways International', 'Caribbean'),
-                ('Thai Airways International', 'United States')]
-    # United Airlines relation
-    relation += [('United Airlines', 'Latin America'),
-                ('United Airlines', 'Europe'),
-                ('United Airlines', 'Canada'),
-                ('United Airlines', 'Asia Pacific'),
-                ('United Airlines', 'Mexicana'),
-                ('United Airlines', 'Caribbean'),
-                ('United Airlines', 'United States')]
-    # VARIG relation
-    relation += [('VARIG', 'Latin America'), ('VARIG', 'Europe'),
-                ('VARIG', 'Asia Pacific'), ('VARIG', 'Africa'),
-                ('VARIG', 'Mexicana'), ('VARIG', 'United States')]
-    concept.add_relations(relation)
-  return(concept)
-
+        concept.add_relation('Negroamaro', '17C')
+        concept.add_relation('Negroamaro', '18C')
+    elif i == 1:
+        relation = []
+        relation += [('Air Canada', 'Latin America'), ('Air Canada', 'Europe'),
+                     ('Air Canada', 'Canada'), ('Air Canada', 'Asia Pacific'),
+                     ('Air Canada', 'Middle East'), ('Air Canada', 'Africa'),
+                     ('Air Canada', 'Mexicana'), ('Air Canada', 'Caribbean'),
+                     ('Air Canada', 'United States')]
+        # Air New zealand relation
+        relation += [('Air New Zealand', 'Europe'),
+                     ('Air New Zealand', 'Asia Pacific'),
+                     ('Air New Zealand', 'United States')]
+        # All Nippon Airways relation
+        relation += [('All Nippon Airways', 'Europe'),
+                     ('All Nippon Airways', 'Asia Pacific'),
+                     ('All Nippon Airways', 'United States')]
+        # Ansett Australia relation
+        relation += [('Ansett Australia', 'Asia Pacific')]
+        # The Australian Airlines Group
+        relation += [('The Austrian Airlines Group', 'Europe'),
+                     ('The Austrian Airlines Group', 'Canada'),
+                     ('The Austrian Airlines Group', 'Asia Pacific'),
+                     ('The Austrian Airlines Group', 'Middle East'),
+                     ('The Austrian Airlines Group', 'Africa'),
+                     ('The Austrian Airlines Group', 'United States')]
+        # British Midland relation
+        relation += [('British Midland', 'Europe')]
+        # Lufthansa relation
+        relation += [('Lufthansa', 'Latin America '), ('Lufthansa', 'Europe'),
+                     ('Lufthansa', 'Canada'), ('Lufthansa', 'Asia Pacific'),
+                     ('Lufthansa', 'Middle East'), ('Lufthansa', 'Africa'),
+                     ('Lufthansa', 'Mexicana'), ('Lufthansa', 'United States')]
+        # Mexicana relation
+        relation += [('Mexicana', 'Latin America'), ('Mexicana', 'Canada'),
+                     ('Mexicana', 'Mexicana'), ('Mexicana', 'Caribbean'),
+                     ('Mexicana', 'United States')]
+        # Scandinavian Airlines relation
+        relation += [('Scandinavian Airlines', 'Latin America'),
+                     ('Scandinavian Airlines', 'Europe'),
+                     ('Scandinavian Airlines', 'Asia Pacific'),
+                     ('Scandinavian Airlines', 'Africa'),
+                     ('Scandinavian Airlines', 'United States')]
+        # Singapore Airlines relation
+        relation += [('Singapore Airlines', 'Europe'),
+                     ('Singapore Airlines', 'Canada'),
+                     ('Singapore Airlines', 'Asia Pacific'),
+                     ('Singapore Airlines', 'Middle East'),
+                     ('Singapore Airlines', 'Africa'),
+                     ('Singapore Airlines', 'United States')]
+        # Thai Airways International
+        relation += [('Thai Airways International', 'Latin America'),
+                     ('Thai Airways International', 'Europe'),
+                     ('Thai Airways International', 'Asia Pacific'),
+                     ('Thai Airways International', 'Caribbean'),
+                     ('Thai Airways International', 'United States')]
+        # United Airlines relation
+        relation += [('United Airlines', 'Latin America'),
+                     ('United Airlines', 'Europe'),
+                     ('United Airlines', 'Canada'),
+                     ('United Airlines', 'Asia Pacific'),
+                     ('United Airlines', 'Mexicana'),
+                     ('United Airlines', 'Caribbean'),
+                     ('United Airlines', 'United States')]
+        # VARIG relation
+        relation += [('VARIG', 'Latin America'), ('VARIG', 'Europe'),
+                     ('VARIG', 'Asia Pacific'), ('VARIG', 'Africa'),
+                     ('VARIG', 'Mexicana'), ('VARIG', 'United States')]
+        concept.add_relations(relation)
+    return(concept)
