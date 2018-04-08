@@ -9,3 +9,7 @@ For theory, refer:
    Daniel Borchmann Tom Hanika and Sergei Obiedkov
     - https://arxiv.org/pdf/1701.00877.pdf
 """
+
+
+class Oracle(object):
+    """docstring for Oracle"""

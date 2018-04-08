@@ -6,3 +6,8 @@ For theory, refer:
 > "Learning Transducers"
     - http://pagesperso.lina.univ-nantes.fr/~cdlh//book/Learning_transducers.pdf
 """
+
+
+class FST(object):
+    """docstring for FST"""
+
