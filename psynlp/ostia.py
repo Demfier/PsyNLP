@@ -21,7 +21,7 @@ class OSTIA(object):
         :param T: An input*output mapping
         """
 
-        if type(T[0]) is tuple:
+        if isinstance(T[0], tuple):
             self.graph = self.form_io_digraph(T)
         else:
             self.graph = self.form_input_diagraph(T)
@@ -279,7 +279,10 @@ class OSTIA(object):
           # rp = rp.replace('_', '')
           # rr = rr.replace('_', '')
           # rs = rs.replace('_', '')
-            score = levenshtein(lp, rp)[-1] + levenshtein(ls, rs)[-1] + levenshtein(lr, rr)[-1]
+            score = levenshtein(lp,
+                                rp)[-1] + levenshtein(ls,
+                                                      rs)[-1] + levenshtein(lr,
+                                                                            rr)[-1]
             score = float(score) / len(new_word)
             if score < min_ldist:
                 min_ldist = score
@@ -304,7 +307,10 @@ class OSTIA(object):
           # rp = rp.replace('_', '')
           # rr = rr.replace('_', '')
           # rs = rs.replace('_', '')
-            score = levenshtein(lp, rp)[-1] + levenshtein(ls, rs)[-1] + levenshtein(lr, rr)[-1]
+            score = levenshtein(lp,
+                                rp)[-1] + levenshtein(ls,
+                                                      rs)[-1] + levenshtein(lr,
+                                                                            rr)[-1]
             score = float(score) / len(source)
             if score < min_ldist:
                 min_ldist = score
@@ -315,12 +321,14 @@ class OSTIA(object):
 
         print(closest_word_index, len(source_words))
         closest_word = source_words[closest_word_index]
-        fitting_path = list(nx.all_simple_paths(graph, 0, -1))[closest_word_index]
+        fitting_path = list(
+            nx.all_simple_paths(
+                graph, 0, -1))[closest_word_index]
         prediction = ''
 
         j = 0
-        for i in range(0, len(fitting_path)-1):
-            edge = graph[fitting_path[i]][fitting_path[i+1]]
+        for i in range(0, len(fitting_path) - 1):
+            edge = graph[fitting_path[i]][fitting_path[i + 1]]
             if edge['input'] == edge['output'] and j < len(source):
                 prediction += source[j]
                 j += 1

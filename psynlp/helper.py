@@ -3,11 +3,12 @@ Contains helper functions used by different submodules
 """
 
 import os
-import operator
 import re
+import operator
 import networkx as nx
 import matplotlib.pyplot as plt
 from ..psynlp.fca import FCA
+
 
 def align(lemma, form):
     alemma, aform, _ = levenshtein(lemma, form)
@@ -15,16 +16,19 @@ def align(lemma, form):
                  len(aform) - len(aform.lstrip('_')))
     tspace = max(len(alemma[::-1]) - len(alemma[::-1].lstrip('_')),
                  len(aform[::-1]) - len(aform[::-1].lstrip('_')))
-    return alemma[0:lspace], alemma[lspace:len(alemma)-tspace], alemma[len(alemma)-tspace:], aform[0:lspace], aform[lspace:len(alemma)-tspace], aform[len(alemma)-tspace:]
+    return alemma[0:lspace], alemma[lspace:len(alemma) - tspace], alemma[len(
+        alemma) - tspace:], aform[0:lspace], aform[lspace:len(alemma) - tspace], aform[len(alemma) - tspace:]
 
 
 def levenshtein(s, t, inscost=1.0, delcost=1.0, substcost=1.0):
     """Recursive implementation of Levenshtein, with alignments returned."""
     def lrec(spast, tpast, srem, trem, cost):
         if len(srem) == 0:
-            return spast + len(trem) * '_', tpast + trem, '', '', cost + len(trem)
+            return spast + len(trem) * '_', tpast + \
+                trem, '', '', cost + len(trem)
         if len(trem) == 0:
-            return spast + srem, tpast + len(srem) * '_', '', '', cost + len(srem)
+            return spast + srem, tpast + \
+                len(srem) * '_', '', '', cost + len(srem)
 
         addcost = 0
         if srem[0] != trem[0]:
@@ -98,9 +102,9 @@ def lcs(s1, s2):
             while re.search(s, s2):
                 if len(s) > len(longest):
                     longest = s
-                if i+len(s) == len(s1):
+                if i + len(s) == len(s1):
                     break
-            s = s1[i:i+len(s)+1]
+            s = s1[i:i + len(s) + 1]
         i += 1
     return longest
 
@@ -266,9 +270,10 @@ def fetch_input_output_pairs(language='english', quality='low'):
     T = sorted(T, key=operator.itemgetter(0))
     return T
 
+
 def get_io_chunks(s1, s2):
     chunks = []
-    while len(s1) != 0 or len(s2) != 0 :
+    while len(s1) != 0 or len(s2) != 0:
         if len(s1) != 0 and len(s2) != 0:
             l = lcs(s1, s2)
             print(s1, s2, l)
@@ -292,41 +297,43 @@ def get_io_chunks(s1, s2):
                     chunks.append((c, ''))
                 # chunks.append((s1, ''))
                 s1 = ''
-        elif len(s1)!=0:
+        elif len(s1) != 0:
             for c in list(s1):
                 chunks.append((c, ''))
             # chunks.append((s1, ''))
             s1 = ''
         else:
             for c in list(s2):
-                  chunks.append(('', c))
+                chunks.append(('', c))
             # chunks.append(('', s2))
             s2 = ''
     return chunks
 
+
 def init_concept_from_wordpairs(wordpairs):
     concept = FCA()
     for (source, target) in wordpairs:
-        if not "*" in source and not "*" in target:
+        if "*" not in source and "*" not in target:
             mutations = iterLCS({'source': source, 'target': target})
             for addition in mutations['added']:
-                concept.add_relation("insert_"+addition, source)
+                concept.add_relation("insert_" + addition, source)
             for deletion in mutations['deleted']:
-                concept.add_relation("delete_"+deletion, source)
+                concept.add_relation("delete_" + deletion, source)
     return concept
+
 
 def iterLCS(pdf):
     sw1 = pdf['source']
     sw2 = pdf['target']
     longList = []
     while True:
-        tempVal = lcs(sw1,sw2)
-        if len(tempVal)  <= 1:
+        tempVal = lcs(sw1, sw2)
+        if len(tempVal) <= 1:
             break
 
     longList.append(tempVal)
-    sw1 = sw1.replace(tempVal,'#',1)
-    sw2 = sw2.replace(tempVal,'!',1)
+    sw1 = sw1.replace(tempVal, '#', 1)
+    sw2 = sw2.replace(tempVal, '!', 1)
     pdf['common'] = longList
     pdf['deleted'] = [item for item in sw1.split('#') if len(item) > 0]
     pdf['added'] = [item for item in sw2.split('!') if len(item) > 0]

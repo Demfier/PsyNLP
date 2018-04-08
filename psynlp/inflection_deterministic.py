@@ -31,6 +31,7 @@ def deterministic_pac(concept):
     pac = structure_df_to_pac(df)
     return pac
 
+
 def fetch_accuracy(language='english', quality='high'):
     pac = parse_metadata_fca(parse_metadata_words(language=language, quality=quality))
     testing_data = fetch_testing_data(language=language)
