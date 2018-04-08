@@ -15,6 +15,9 @@ from helper import is_prefixed_with, eliminate_prefix, eliminate_suffix, lcp, ge
 class OSTIA(object):
     """docstring for OSTIA"""
 
+
+<< << << < HEAD
+
     def __init__(self, T):
         """
         Initializes an FST from the given input and output tapes, and implements OSTIA

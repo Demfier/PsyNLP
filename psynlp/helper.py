@@ -4,6 +4,8 @@ Contains helper functions used by different submodules
 
 import os
 import re
+import networkx as nx
+import matplotlib.pyplot as plt
 
 
 def align(lemma, form):
@@ -102,40 +104,108 @@ def lcs(s1, s2):
     return longest
 
 
-def get_io_chunks(s1, s2):
-    chunks = []
-    while len(s1) != 0 or len(s2) != 0:
-        if len(s1) != 0 and len(s2) != 0:
-            l = lcs(s1, s2)
-            print(s1, s2, l)
-            if s1.find(l) == 0 and l:
-                # chunks.append((l, l))
-                for c in list(l):
-                    chunks.append((c, c))
-                s1 = s1[len(l):]
-                s2 = s2[len(l):]
-            elif l:
-                if s2.find(l) == 0:
-                    chunks.append((s1[0], ''))
-                    s1 = s1[1:]
-                else:
-                    for c in list(s2[:s2.find(l)]):
-                        chunks.append(('', c))
-                    # chunks.append(('', l))
-                    s2 = s2[s2.find(l):]
-            else:
-                for c in list(s1):
-                    chunks.append((c, ''))
-                # chunks.append((s1, ''))
-                s1 = ''
-        elif len(s1) != 0:
-            for c in list(s1):
-                chunks.append((c, ''))
-            # chunks.append((s1, ''))
-            s1 = ''
-        else:
-            for c in list(s2):
-                chunks.append(('', c))
-            # chunks.append(('', s2))
-            s2 = ''
-    return chunks
+def lcs(s1, s2):
+    s1 = s1.replace('(', '').replace(')', '')
+    s2 = s2.replace('(', '').replace(')', '')
+    longest = ""
+    i = 0
+    for x in s1:
+        if re.search(x, s2):
+            s = x
+            while re.search(s, s2):
+                if len(s) > len(longest):
+                    longest = s
+                if i + len(s) == len(s1):
+                    break
+                s = s1[i:i + len(s) + 1]
+        i += 1
+    return longest
+
+
+def visualize_graph(G, attr):
+    if attr == 'uid':
+        elarge = [
+            (u,
+             v) for (
+                u,
+                v,
+                d) in G.edges(
+                data=True) if len(
+                d['uid']) > 2]
+        esmall = [
+            (u,
+             v) for (
+                u,
+                v,
+                d) in G.edges(
+                data=True) if len(
+                d['uid']) <= 2]
+    else:
+        elarge = [
+            (u, v) for (
+                u, v, d) in G.edges(
+                data=True) if d['weight'] > 2]
+        esmall = [
+            (u, v) for (
+                u, v, d) in G.edges(
+                data=True) if d['weight'] <= 2]
+
+    pos = nx.spring_layout(G)  # positions for all nodes
+    nx.draw_networkx_nodes(G, pos, node_size=700)
+    nx.draw_networkx_edges(G, pos, edgelist=elarge, width=6)
+    nx.draw_networkx_edges(
+        G,
+        pos,
+        edgelist=esmall,
+        width=6,
+        alpha=0.5,
+        edge_color='b',
+        style='dashed')
+    nx.draw_networkx_labels(G, pos, font_size=20, font_family='sans-serif')
+    plt.axis('off')
+    plt.savefig("weighted_graph.png")
+    plt.show()
+
+
+def visualize_network(G, attr):
+    labels = list()
+    for node in G:
+        for neighbor in G[node]:
+            labels.append(G[node][neighbor][attr])
+    graph_pos = nx.spring_layout(G)
+    edge_labels = dict(zip(G.edges, labels))
+    nx.draw_networkx_nodes(
+        G,
+        graph_pos,
+        node_size=1000,
+        node_color='blue',
+        alpha=0.3)
+    nx.draw_networkx_edges(G, graph_pos, width=2, alpha=0.1, style='dashed')
+    nx.draw_networkx_labels(
+        G,
+        graph_pos,
+        font_size=15,
+        font_family='sans-serif')
+    nx.draw_networkx_edge_labels(
+        G, graph_pos, edge_labels=edge_labels, font_size=8)
+    plt.axis('off')
+    plt.show()
+
+
+def read_wordpairs(path):
+    file = open(path, 'r')
+    wordpairs = dict()
+    for line in file.readlines():
+        source, dest, metadata = line.split("\t")
+        # metadata = metadata.replace("\n", "").split(";")
+        # if "V" in metadata and "PRS" in metadata:
+        wordpairs[source] = dest
+
+        # if len(source) < 10 and len(dest) < 15:
+    return(wordpairs)
+
+
+def pretty_print_graph(G):
+    print("\n")
+    print("Number of nodes : ", len(G.nodes))
+    print("Number of edges : ", len(G.edges))
