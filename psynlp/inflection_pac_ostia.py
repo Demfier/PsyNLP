@@ -8,7 +8,8 @@ from ..psynlp.helper import parse_metadata_fca, parse_metadata_words, fetch_test
 
 
 def fetch_accuracy(language='english', quality='high'):
-    pac = parse_metadata_fca(parse_metadata_words(language=language, quality=quality))
+    pac = parse_metadata_fca(parse_metadata_words(
+        language=language, quality=quality), 'pac')
     testing_data = fetch_testing_data(language=language)
     total = correct = 0
 
@@ -32,7 +33,8 @@ def fetch_accuracy(language='english', quality='high'):
         computed_dest = inflect(source, operations)
         if computed_dest == expected_dest:
             correct += 1
-            print("{} + {}: Expected and found {}".format(source, metadata, computed_dest))
+            print("{} + {}: Expected and found {}".format(source,
+                                                          metadata, computed_dest))
         else:
             print("{} + {}: Expected {} but found {}".format(source,
                                                              metadata, expected_dest, computed_dest))

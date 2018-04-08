@@ -4,7 +4,7 @@ Pipelines for SIGMORPHON-2017 task of Universal Morphological Inflection.
 
 import pandas as pd
 from ..psynlp.ostia import OSTIA
-from ..psynlp.helper import parse_metadata_words, parse_metadata_fca, fetch_testing_data, inflect
+from ..psynlp.helper import parse_metadata_words, parse_metadata_fca, fetch_testing_data, inflect, init_concept_from_wordpairs
 
 
 def deterministic_pac(concept):
@@ -31,8 +31,10 @@ def deterministic_pac(concept):
     pac = structure_df_to_pac(df)
     return pac
 
+
 def fetch_accuracy(language='english', quality='high'):
-    pac = parse_metadata_fca(parse_metadata_words(language=language, quality=quality))
+    pac = parse_metadata_fca(parse_metadata_words(
+        language=language, quality=quality), 'deterministic')
     testing_data = fetch_testing_data(language=language)
     total = correct = 0
 
@@ -71,7 +73,8 @@ def fetch_accuracy(language='english', quality='high'):
         computed_dest = inflect(source, operations)
         if computed_dest == expected_dest:
             correct += 1
-            print("{} + {}: Expected and found {}".format(source, metadata, computed_dest))
+            print("{} + {}: Expected and found {}".format(source,
+                                                          metadata, computed_dest))
         else:
             print("{} + {}: Expected {} but found {}".format(source,
                                                              metadata, expected_dest, computed_dest))

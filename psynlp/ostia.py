@@ -8,8 +8,9 @@ For theory, refer:
     - https://pdfs.semanticscholar.org/9058/01c8e75daacb27d70ccc3c0b587411b6d213.pdf
 """
 
+import networkx as nx
 from ..psynlp.fst import FST
-from ..psynlp.helper import is_prefixed_with, eliminate_prefix, eliminate_suffix, lcp, get_io_chunks
+from ..psynlp.helper import init_concept_from_wordpairs, is_prefixed_with, eliminate_prefix, eliminate_suffix, lcp, get_io_chunks, align, levenshtein
 
 
 class OSTIA(object):
@@ -26,6 +27,7 @@ class OSTIA(object):
         else:
             self.graph = self.form_input_diagraph(T)
 
+        print("Prepared DiGraph")
         tou = tou_dup = self
         exit_condition_1 = exit_condition_2 = False
         q = tou.first()
@@ -239,9 +241,6 @@ class OSTIA(object):
                 else:
                     from_state = to_state
                     to_state = graph.add_state()
-                    for metadata in metadatas:
-                        graph.add_edge(metadata, from_state)
-                        graph.add_edge(metadata, to_state)
                     graph.add_arc(
                         from_state,
                         input_chunk,
@@ -249,10 +248,10 @@ class OSTIA(object):
                         to_state)
 
         for (input_chunk, output_chunk, to_state) in input_arcs:
-            graph.add_arc(0, input_chunk, output_chunk, to_state)
+            graph.add_arc(0, input_chunk, input_chunk, to_state)
 
         for (from_state, input_chunk, output_chunk) in output_arcs:
-            graph.add_arc(from_state, input_chunk, output_chunk, -1)
+            graph.add_arc(from_state, input_chunk, input_chunk, -1)
 
         print("Done forming the directed FST graph")
         return(graph)
@@ -272,14 +271,15 @@ class OSTIA(object):
         min_ldist = len(new_word)
         closest_word = new_word
         for word in words:
-            lp, lr, ls, rp, rr, rs = alignprs(word, new_word)
+            lp, lr, ls, rp, rr, rs = align(word, new_word)
           # lp = lp.replace('_', '')
           # lr = lr.replace('_', '')
           # ls = ls.replace('_', '')
           # rp = rp.replace('_', '')
           # rr = rr.replace('_', '')
           # rs = rs.replace('_', '')
-            score = levenshtein(lp, rp)[-1] + levenshtein(ls, rs)[-1] + levenshtein(lr, rr)[-1]
+            score = levenshtein(
+                lp, rp)[-1] + levenshtein(ls, rs)[-1] + levenshtein(lr, rr)[-1]
             score = float(score) / len(new_word)
             if score < min_ldist:
                 min_ldist = score
@@ -297,14 +297,15 @@ class OSTIA(object):
         closest_word_index = -1
 
         for i, word in enumerate(source_words):
-            lp, lr, ls, rp, rr, rs = alignprs(word, source)
+            lp, lr, ls, rp, rr, rs = align(word, source)
           # lp = lp.replace('_', '')
           # lr = lr.replace('_', '')
           # ls = ls.replace('_', '')
           # rp = rp.replace('_', '')
           # rr = rr.replace('_', '')
           # rs = rs.replace('_', '')
-            score = levenshtein(lp, rp)[-1] + levenshtein(ls, rs)[-1] + levenshtein(lr, rr)[-1]
+            score = levenshtein(
+                lp, rp)[-1] + levenshtein(ls, rs)[-1] + levenshtein(lr, rr)[-1]
             score = float(score) / len(source)
             if score < min_ldist:
                 min_ldist = score
@@ -315,7 +316,8 @@ class OSTIA(object):
 
         print(closest_word_index, len(source_words))
         closest_word = source_words[closest_word_index]
-        fitting_path = list(nx.all_simple_paths(graph, 0, -1))[closest_word_index]
+        fitting_path = list(nx.all_simple_paths(
+            graph, 0, -1))[closest_word_index]
         prediction = ''
 
         j = 0

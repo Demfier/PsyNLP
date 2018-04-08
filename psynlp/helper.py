@@ -5,9 +5,13 @@ Contains helper functions used by different submodules
 import os
 import operator
 import re
+import time
+
 import networkx as nx
 import matplotlib.pyplot as plt
 from ..psynlp.fca import FCA
+from ..psynlp.inflection_deterministic import deterministic_pac
+
 
 def align(lemma, form):
     alemma, aform, _ = levenshtein(lemma, form)
@@ -87,25 +91,11 @@ def eliminate_prefix(v, u):
     w = v.lstrip(u)
     return(w)
 
-
 # Iterative longest contiguous sequence. No one character matchings
-def lcs(s1, s2):
-    longest = ""
-    i = 0
-    for x in s1:
-        if re.search(x, s2):
-            s = x
-            while re.search(s, s2):
-                if len(s) > len(longest):
-                    longest = s
-                if i+len(s) == len(s1):
-                    break
-            s = s1[i:i+len(s)+1]
-        i += 1
-    return longest
 
 
 def lcs(s1, s2):
+    print(s1, s2)
     s1 = s1.replace('(', '').replace(')', '')
     s2 = s2.replace('(', '').replace(')', '')
     longest = ""
@@ -222,14 +212,17 @@ def parse_metadata_words(language='english', quality='low'):
     return metadata_words
 
 
-def parse_metadata_fca(metadata_words):
+def parse_metadata_fca(metadata_words, type='pac'):
     metadata_fca = {}
     for metadata in metadata_words:
         wordpairs = metadata_words[metadata]
         concept = init_concept_from_wordpairs(wordpairs)
         if len(concept.objects()) > 0:
             start1 = time.clock()
-            pac = deterministic_pac(concept)
+            if type == 'deterministic':
+                pac = deterministic_pac(concept)
+            else:
+                pac = concept.pac_basis(concept.is_member, 0.1, 0.1)
             end1 = time.clock() - start1
         else:
             pac, end1 = None, None
@@ -266,9 +259,10 @@ def fetch_input_output_pairs(language='english', quality='low'):
     T = sorted(T, key=operator.itemgetter(0))
     return T
 
+
 def get_io_chunks(s1, s2):
     chunks = []
-    while len(s1) != 0 or len(s2) != 0 :
+    while len(s1) != 0 or len(s2) != 0:
         if len(s1) != 0 and len(s2) != 0:
             l = lcs(s1, s2)
             print(s1, s2, l)
@@ -292,22 +286,23 @@ def get_io_chunks(s1, s2):
                     chunks.append((c, ''))
                 # chunks.append((s1, ''))
                 s1 = ''
-        elif len(s1)!=0:
+        elif len(s1) != 0:
             for c in list(s1):
                 chunks.append((c, ''))
             # chunks.append((s1, ''))
             s1 = ''
         else:
             for c in list(s2):
-                  chunks.append(('', c))
+                chunks.append(('', c))
             # chunks.append(('', s2))
             s2 = ''
     return chunks
 
+
 def init_concept_from_wordpairs(wordpairs):
     concept = FCA()
     for (source, target) in wordpairs:
-        if not "*" in source and not "*" in target:
+        if "*" not in source and "*" not in target:
             mutations = iterLCS({'source': source, 'target': target})
             for addition in mutations['added']:
                 concept.add_relation("insert_"+addition, source)
@@ -315,18 +310,19 @@ def init_concept_from_wordpairs(wordpairs):
                 concept.add_relation("delete_"+deletion, source)
     return concept
 
+
 def iterLCS(pdf):
     sw1 = pdf['source']
     sw2 = pdf['target']
     longList = []
     while True:
-        tempVal = lcs(sw1,sw2)
-        if len(tempVal)  <= 1:
+        tempVal = lcs(sw1, sw2)
+        if len(tempVal) <= 1:
             break
 
     longList.append(tempVal)
-    sw1 = sw1.replace(tempVal,'#',1)
-    sw2 = sw2.replace(tempVal,'!',1)
+    sw1 = sw1.replace(tempVal, '#', 1)
+    sw2 = sw2.replace(tempVal, '!', 1)
     pdf['common'] = longList
     pdf['deleted'] = [item for item in sw1.split('#') if len(item) > 0]
     pdf['added'] = [item for item in sw2.split('!') if len(item) > 0]
