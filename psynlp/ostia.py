@@ -11,5 +11,3 @@ For theory, refer:
 
 class OSTIA(object):
     """docstring for OSTIA"""
-
-

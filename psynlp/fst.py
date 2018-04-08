@@ -10,4 +10,3 @@ For theory, refer:
 
 class FST(object):
     """docstring for FST"""
-
