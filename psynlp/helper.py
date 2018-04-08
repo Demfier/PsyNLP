@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 
 def align(lemma, form):
-    alemma, aform = levenshtein(lemma, form)
+    alemma, aform, _ = levenshtein(lemma, form)
     lspace = max(len(alemma) - len(alemma.lstrip('_')),
                  len(aform) - len(aform.lstrip('_')))
     tspace = max(len(alemma[::-1]) - len(alemma[::-1].lstrip('_')),
@@ -36,7 +36,7 @@ def levenshtein(s, t, inscost=1.0, delcost=1.0, substcost=1.0):
                    key=lambda x: x[4])
 
     answer = lrec('', '', s, t, 0)
-    return answer[0], answer[1]
+    return answer[0], answer[1], answer[4]
 
 
 def is_prefixed_with(string, prefix):
@@ -191,21 +191,70 @@ def visualize_network(G, attr):
     plt.axis('off')
     plt.show()
 
+def fetch_testing_data(language='english'):
+    filepath = "data/{}-dev".format(language)
+    T = []
+    file = open(filepath, 'r')
+    for line in file.readlines():
+        source, expected_dest, metadata = line.split("\t")
+        if not "*" in source and not "*" in expected_dest:
+            metadata = metadata.strip("\n")
+            T.append((source, metadata, expected_dest))
+    print("Providing all test words in structured manner")
+    T = sorted(T, key=operator.itemgetter(0))
+    return T
 
-def read_wordpairs(path):
-    file = open(path, 'r')
-    wordpairs = dict()
+def parse_metadata_words(language='english', quality='low'):
+    metadata_words = {}
+    filepath = "data/{}-train-{}".format(language, quality)
+    file = open(filepath, 'r')
     for line in file.readlines():
         source, dest, metadata = line.split("\t")
-        # metadata = metadata.replace("\n", "").split(";")
-        # if "V" in metadata and "PRS" in metadata:
-        wordpairs[source] = dest
+        if not "*" in source and not "*" in dest:
+            metadata = metadata.strip()
+            if metadata in metadata_words:
+                metadata_words[metadata].append((source, dest))
+            else:
+                metadata_words[metadata] = []
+    return metadata_words
 
-        # if len(source) < 10 and len(dest) < 15:
-    return(wordpairs)
-
+def parse_metadata_fca(metadata_words):
+    metadata_fca = {}
+    for metadata in metadata_words:
+        wordpairs = metadata_words[metadata]
+        concept = init_concept_from_wordpairs(wordpairs)
+        if len(concept.objects()) > 0:
+            start1 = time.clock()
+            pac = deterministic_pac(concept)
+            end1 = time.clock() - start1
+        else:
+            pac, end1 = None, None
+        metadata_fca[metadata] = (concept, pac, end1)
+    return(metadata_fca)
 
 def pretty_print_graph(G):
     print("\n")
     print("Number of nodes : ", len(G.nodes))
     print("Number of edges : ", len(G.edges))
+
+def inflect(word, operations):
+    for operation in sorted(operations):
+        method, chunk = operation.split('_')
+        if method == 'delete':
+            word = word.rstrip(chunk)
+        else:
+            word = word + chunk
+    return word
+
+def fetch_input_output_pairs(language='english', quality='low'):
+    filepath = "data/{}-train-{}".format(language, quality)
+    T = list()
+    file = open(filepath,'r')
+    for line in file.readlines():
+    source, dest, metadata = line.split("\t")
+    if not "*" in source and not "*" in dest:
+        metadata = metadata.strip("\n").split(";")
+        T.append((source, metadata, dest))
+    print("Providing all words in structured manner, to OSTIA")
+    T = sorted(T, key=operator.itemgetter(0))
+    return T

@@ -15,16 +15,17 @@ from helper import is_prefixed_with, eliminate_prefix, eliminate_suffix, lcp, ge
 class OSTIA(object):
     """docstring for OSTIA"""
 
-
-<< << << < HEAD
-
     def __init__(self, T):
         """
         Initializes an FST from the given input and output tapes, and implements OSTIA
         :param T: An input*output mapping
         """
 
-        self.graph = self.form_digraph(T)
+        if type(T[0]) is tuple:
+            self.graph = self.form_io_digraph(T)
+        else:
+            self.graph = self.form_input_diagraph(T)
+
         tou = tou_dup = self
         exit_condition_1 = exit_condition_2 = False
         q = tou.first()
@@ -176,7 +177,7 @@ class OSTIA(object):
         self.graph = graph
         return self
 
-    def form_digraph(self, T):
+    def form_io_digraph(self, T):
         """
         :param T: A set of all input/output pairs
         :return graph: A directed networkx graph
@@ -216,9 +217,119 @@ class OSTIA(object):
         print("Done forming the directed FST graph")
         return(graph)
 
+    def form_input_digraph(self, T):
+        """
+        :param T: A set of all input/output pairs
+        :return graph: A directed networkx graph
+        """
+
+        graph = FST()
+        input_arcs = output_arcs = []
+
+        for input_word in T:
+            io_chunks = list(input_word) + ['>']
+
+            for (i, input_chunk) in enumerate(io_chunks):
+                if i == 0:
+                    to_state = graph.add_state()
+                    input_arcs.append((input_chunk, input_chunk, to_state))
+                elif i == len(io_chunks) - 1:
+                    from_state = to_state
+                    output_arcs.append((from_state, input_chunk, input_chunk))
+                else:
+                    from_state = to_state
+                    to_state = graph.add_state()
+                    for metadata in metadatas:
+                        graph.add_edge(metadata, from_state)
+                        graph.add_edge(metadata, to_state)
+                    graph.add_arc(
+                        from_state,
+                        input_chunk,
+                        input_chunk,
+                        to_state)
+
+        for (input_chunk, output_chunk, to_state) in input_arcs:
+            graph.add_arc(0, input_chunk, output_chunk, to_state)
+
+        for (from_state, input_chunk, output_chunk) in output_arcs:
+            graph.add_arc(from_state, input_chunk, output_chunk, -1)
+
+        print("Done forming the directed FST graph")
+        return(graph)
+
     def word_from_path(self, graph, path):
         path_input_word = ''
         for i in range(0, len(path) - 1):
             edge = graph[path[i]][path[i + 1]]
             path_input_word += edge['input']
         return path_input_word
+
+    def matches_any_path(self, new_word):
+        graph = self.graph
+        words = []
+        for path in list(nx.all_simple_paths(graph, 0, -1)):
+            words.append(self.word_from_path(graph, list(path)))
+        min_ldist = len(new_word)
+        closest_word = new_word
+        for word in words:
+            lp, lr, ls, rp, rr, rs = alignprs(word, new_word)
+          # lp = lp.replace('_', '')
+          # lr = lr.replace('_', '')
+          # ls = ls.replace('_', '')
+          # rp = rp.replace('_', '')
+          # rr = rr.replace('_', '')
+          # rs = rs.replace('_', '')
+            score = levenshtein(lp, rp)[-1] + levenshtein(ls, rs)[-1] + levenshtein(lr, rr)[-1]
+            score = float(score) / len(new_word)
+            if score < min_ldist:
+                min_ldist = score
+                closest_word = word
+        return((min_ldist, closest_word))
+
+    def fit_closest_path(self, source, metadatas):
+        graph = self.graph
+        graph = graph.contextual_subgraph(metadatas)
+
+        source_words = []
+        for path in list(nx.all_simple_paths(graph, 0, -1)):
+            source_words.append(self.word_from_path(graph, list(path)))
+        min_ldist = len(source)
+        closest_word_index = -1
+
+        for i, word in enumerate(source_words):
+            lp, lr, ls, rp, rr, rs = alignprs(word, source)
+          # lp = lp.replace('_', '')
+          # lr = lr.replace('_', '')
+          # ls = ls.replace('_', '')
+          # rp = rp.replace('_', '')
+          # rr = rr.replace('_', '')
+          # rs = rs.replace('_', '')
+            score = levenshtein(lp, rp)[-1] + levenshtein(ls, rs)[-1] + levenshtein(lr, rr)[-1]
+            score = float(score) / len(source)
+            if score < min_ldist:
+                min_ldist = score
+                closest_word_index = i
+
+        if closest_word_index == -1:
+            return((source, ''))
+
+        print(closest_word_index, len(source_words))
+        closest_word = source_words[closest_word_index]
+        fitting_path = list(nx.all_simple_paths(graph, 0, -1))[closest_word_index]
+        prediction = ''
+
+        j = 0
+        for i in range(0, len(fitting_path)-1):
+            edge = graph[fitting_path[i]][fitting_path[i+1]]
+            if edge['input'] == edge['output'] and j < len(source):
+                prediction += source[j]
+                j += 1
+            elif edge['input'] == '':
+                prediction += edge['output']
+            elif edge['output'] == '':
+                j += 1
+
+        if j < len(source):
+            prediction += source[j:]
+
+        return((prediction, closest_word))
