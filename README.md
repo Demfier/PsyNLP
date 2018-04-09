@@ -17,6 +17,14 @@ PsyNLP is a Python library, that intends to handle morphological inflections for
 
 [(Back to ToC)](#table-of-contents)
 
+- Installing from PIP
+
+```sh
+$ pip3 install psynlp
+```
+
+- Setting up locally
+
 1. Clone the repository
 
 ```sh
@@ -39,7 +47,7 @@ $ pip3 install -r requirements.txt
 
 [(Back to ToC)](#table-of-contents)
 
-With the power of argparse, the [main.py](https://github.com/Demfier/PsyNLP/blob/master/main.py) acts as the central script to run any of the pipelines, for any language and training data quality.
+With the power of "argparse", the [main.py](https://github.com/Demfier/PsyNLP/blob/master/main.py) acts as the central script to run any of the pipelines, for any language and training data quality.
 
 
 - Help menu, for more details:
