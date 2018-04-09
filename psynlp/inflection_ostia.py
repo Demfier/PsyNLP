@@ -6,7 +6,7 @@ from ..psynlp.ostia import OSTIA
 from ..psynlp.helper import fetch_input_output_pairs, fetch_testing_data, levenshtein
 
 
-def fetch_accuracy(language='emglish', quality='high'):
+def fetch_accuracy(language='english', quality='high'):
     model = fetch_input_output_pairs(language=language, quality=quality)
     model = OSTIA(model)
 
@@ -14,8 +14,9 @@ def fetch_accuracy(language='emglish', quality='high'):
     levenshteinDist = {}
     T = fetch_testing_data(language=language)
     for (source, metadatas, expected_dest) in T:
-        predicted_dest, closest_word = model.fit_closest_path(
-            source, metadatas)
+        predicted_dest, closest_word = model.fit_closest_path(source, metadatas.split(";"))
+        if predicted_dest is None:
+            continue
         if predicted_dest == expected_dest:
             print("{} + {}: expected and received {}".format(source,
                                                              metadatas, predicted_dest))

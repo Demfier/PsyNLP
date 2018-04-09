@@ -28,9 +28,10 @@ class OSTIA(object):
             self.graph = self.form_input_digraph(T)
 
         tou = tou_dup = self
-        # print("Prepared DiGraph")
+        print("Prepared DiGraph", tou.first(), tou.last())
         exit_condition_1 = exit_condition_2 = False
         q = tou.first()
+        print(q < tou.last())
         while q < tou.last():
             q = tou.next(q)
             p = tou.first()
@@ -184,21 +185,30 @@ class OSTIA(object):
         """
 
         graph = FST()
-        input_arcs = output_arcs = []
+        input_arcs = []
+        output_arcs = []
 
         for (input_word, metadatas, output_word) in T:
+            for metadata in metadatas:
+                graph.add_metadata(metadata)
+
+
             io_chunks = get_io_chunks(input_word, output_word) + [('#', '#')]
 
             for (i, (input_chunk, output_chunk)) in enumerate(io_chunks):
                 if i == 0:
                     to_state = graph.add_state()
+                    for metadata in metadatas:
+                        graph.add_edge(metadata, to_state)
                     input_arcs.append((input_chunk, output_chunk, to_state))
                 elif i == len(io_chunks) - 1:
                     from_state = to_state
+                    for metadata in metadatas:
+                        graph.add_edge(metadata, from_state)
                     output_arcs.append((from_state, input_chunk, output_chunk))
                 else:
                     from_state = to_state
-                    to_state = graph.add_state()
+                    to_state   = graph.add_state()
                     for metadata in metadatas:
                         graph.add_edge(metadata, from_state)
                         graph.add_edge(metadata, to_state)
@@ -210,7 +220,8 @@ class OSTIA(object):
 
         graph.add_state(0)
         graph.add_state(-1)
-        for metadata in metadatas:
+
+        for metadata in graph.metadatas():
             graph.add_edge(metadata, 0)
             graph.add_edge(metadata, -1)
 
@@ -230,7 +241,8 @@ class OSTIA(object):
         """
 
         graph = FST()
-        input_arcs = output_arcs = []
+        input_arcs = []
+        output_arcs = []
 
         for input_word in T:
             io_chunks = list(input_word) + ['>']
@@ -299,8 +311,7 @@ class OSTIA(object):
 
         for i, word in enumerate(source_words):
             lp, lr, ls, rp, rr, rs = align(word, source)
-            score = levenshtein(
-                lp, rp)[-1] + levenshtein(ls, rs)[-1] + levenshtein(lr, rr)[-1]
+            score = levenshtein(lp, rp)[-1] + levenshtein(ls, rs)[-1] + levenshtein(lr, rr)[-1]
             score = float(score) / len(source)
             if score < min_ldist:
                 min_ldist = score
@@ -310,8 +321,7 @@ class OSTIA(object):
             return((source, ''))
 
         closest_word = source_words[closest_word_index]
-        fitting_path = list(nx.all_simple_paths(
-            graph, 0, -1))[closest_word_index]
+        fitting_path = list(nx.all_simple_paths(graph, 0, -1))[closest_word_index]
         prediction = ''
 
         j = 0
