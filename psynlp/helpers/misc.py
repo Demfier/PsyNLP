@@ -1,10 +1,10 @@
 import pandas as pd
 
 
-def pretty_print_graph(G):
-    print("\n")
-    print("Number of nodes : ", len(G.nodes))
-    print("Number of edges : ", len(G.edges))
+def pretty_verbose_print_graph(G):
+    verbose_print_2("\n")
+    verbose_print_2("Number of nodes : ", len(G.nodes))
+    verbose_print_2("Number of edges : ", len(G.edges))
 
 
 def deterministic_pac(concept):

@@ -28,7 +28,6 @@ def fetch_accuracy(language='english', quality='high'):
             total += 1
             continue
         for (antecedent_attrs, consequent_attrs) in cluster:
-            print(len(consequent_attrs))
             ostia = OSTIA(consequent_attrs)
             scores.append(ostia.matches_any_path(source))
 
@@ -40,14 +39,14 @@ def fetch_accuracy(language='english', quality='high'):
         computed_dest = inflect(source, operations)
         if computed_dest == expected_dest:
             correct += 1
-            print("{} + {}: Expected and found {}".format(source,
+            verbose_print_1("{} + {}: Expected and found {}".format(source,
                                                           metadata, computed_dest))
         else:
-            print("{} + {}: Expected {} but found {}".format(source,
+            verbose_print_1("{} + {}: Expected {} but found {}".format(source,
                                                              metadata, expected_dest, computed_dest))
-        print("due to {} with score {}".format(score_tup, min_score))
+        verbose_print_2("due to {} with score {}".format(score_tup, min_score))
         total += 1
 
     accuracy = 100*float(correct) / total
-    print("\n\nExact word-match accuracy: {}".format(accuracy))
+    print("\n\nExact word-match accuracy for {}-{}: {}".format(language, quality, accuracy))
     return accuracy

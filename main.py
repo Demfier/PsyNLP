@@ -1,7 +1,6 @@
 import argparse
 from os import listdir
-import psynlp.helpers.globals as g
-import builtins as __builtin__
+import psynlp.helpers.builtins as builtins
 
 parser = argparse.ArgumentParser(
     description='Runs one of the pipeline scripts, for a given language and quality.')
@@ -11,9 +10,9 @@ parser.add_argument('-l', '--language', default='english',
                     help='Name of the language (Default: english)')
 parser.add_argument('-q', '--quality', default='low',
                     help='Size of the training data (Default: low)')
-parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', default=False, help='Prints verbose output if specified')
+parser.add_argument('-v', '--verbose', action="count", default=False, help='Prints verbose output if specified')
 args = parser.parse_args()
-print =  __builtin__.print if args.verbose else lambda *a, **k: None
+builtins.init_verbose(args.verbose)
 
 PIPELINES = [f.rstrip('.py') for f in listdir(
     'psynlp/pipelines') if f.endswith('.py')]
