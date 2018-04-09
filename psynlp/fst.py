@@ -86,7 +86,6 @@ class FST(nx.DiGraph):
         :param output: An output character(s)
         :param to_state: The output state of an arc
         """
-
         self.add_edge(from_state, to_state, input=input, output=output)
 
     def arcs(self):

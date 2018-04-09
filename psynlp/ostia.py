@@ -25,10 +25,10 @@ class OSTIA(object):
         if isinstance(T[0], tuple):
             self.graph = self.form_io_digraph(T)
         else:
-            self.graph = self.form_input_diagraph(T)
+            self.graph = self.form_input_digraph(T)
 
-        print("Prepared DiGraph")
         tou = tou_dup = self
+        print("Prepared DiGraph", tou.first(), tou.last())
         exit_condition_1 = exit_condition_2 = False
         q = tou.first()
         while q < tou.last():
@@ -210,6 +210,9 @@ class OSTIA(object):
                         output_chunk,
                         to_state)
 
+        self.add_state(0)
+        self.add_state(-1)
+
         for (input_chunk, output_chunk, to_state) in input_arcs:
             graph.add_arc(0, input_chunk, output_chunk, to_state)
 
@@ -246,6 +249,9 @@ class OSTIA(object):
                         input_chunk,
                         input_chunk,
                         to_state)
+
+        self.add_state(0)
+        self.add_state(-1)
 
         for (input_chunk, output_chunk, to_state) in input_arcs:
             graph.add_arc(0, input_chunk, input_chunk, to_state)

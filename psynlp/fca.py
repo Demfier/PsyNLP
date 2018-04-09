@@ -9,7 +9,7 @@ For theory refer:
     - https://link.springer.com/content/pdf/10.1007%2F978-3-662-49291-8.pdf
 """
 from ..psynlp import oracle
-from ..psynlp.helper import init_concept_from_wordpairs, read_wordpairs, iterLCS
+from ..psynlp.helper import *
 import itertools
 import networkx as nx
 

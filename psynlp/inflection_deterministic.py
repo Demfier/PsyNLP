@@ -4,32 +4,7 @@ Pipelines for SIGMORPHON-2017 task of Universal Morphological Inflection.
 
 import pandas as pd
 from ..psynlp.ostia import OSTIA
-from ..psynlp.helper import parse_metadata_words, parse_metadata_fca, fetch_testing_data, inflect, init_concept_from_wordpairs
-
-
-def deterministic_pac(concept):
-    def generate_df(concept):
-        rows = []
-        for word in concept.attributes():
-            operations = sorted(list(concept.objects_intent(set([word]))))
-            rows.append({'source': word, 'operations': ','.join(operations)})
-
-        df = pd.DataFrame(rows)
-        return df
-
-    def structure_df_to_pac(df):
-        pac = []
-        for (operations, sub_df) in sorted(df.groupby(['operations']), key=lambda x: len(list(x[1]['source'])), reverse=True):
-            # for (operations, sub_df) in sorted(df.groupby(['operations'])):
-            consequent_attrs = tuple(sorted(list(sub_df['source'])))
-            antecedent_attrs = tuple([consequent_attrs[0]])
-            pac.append((antecedent_attrs, consequent_attrs))
-
-        return pac
-
-    df = generate_df(concept)
-    pac = structure_df_to_pac(df)
-    return pac
+from ..psynlp.helper import init_concept_from_wordpairs, fetch_testing_data, inflect, parse_metadata_words, parse_metadata_fca
 
 
 def fetch_accuracy(language='english', quality='high'):

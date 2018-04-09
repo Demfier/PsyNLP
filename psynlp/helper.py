@@ -9,9 +9,7 @@ import operator
 import networkx as nx
 import matplotlib.pyplot as plt
 from ..psynlp.fca import FCA
-from ..psynlp.inflection_deterministic import deterministic_pac
-
-
+import pandas as pd
 
 def align(lemma, form):
     alemma, aform, _ = levenshtein(lemma, form)
@@ -212,17 +210,17 @@ def parse_metadata_words(language='english', quality='low'):
     return metadata_words
 
 
-def parse_metadata_fca(metadata_words, type='pac'):
+def parse_metadata_fca(metadata_words, cluster_type='pac'):
     metadata_fca = {}
     for metadata in metadata_words:
         wordpairs = metadata_words[metadata]
         concept = init_concept_from_wordpairs(wordpairs)
         if len(concept.objects()) > 0:
             start1 = time.clock()
-            if type == 'deterministic':
-                pac = deterministic_pac(concept)
-            else:
+            if cluster_type == 'pac':
                 pac = concept.pac_basis(concept.is_member, 0.1, 0.1)
+            else:
+                pac = deterministic_pac(concept)
             end1 = time.clock() - start1
         else:
             pac, end1 = None, None
@@ -299,18 +297,6 @@ def get_io_chunks(s1, s2):
     return chunks
 
 
-def init_concept_from_wordpairs(wordpairs):
-    concept = FCA()
-    for (source, target) in wordpairs:
-        if "*" not in source and "*" not in target:
-            mutations = iterLCS({'source': source, 'target': target})
-            for addition in mutations['added']:
-                concept.add_relation("insert_" + addition, source)
-            for deletion in mutations['deleted']:
-                concept.add_relation("delete_" + deletion, source)
-    return concept
-
-
 def iterLCS(pdf):
     sw1 = pdf['source']
     sw2 = pdf['target']
@@ -320,10 +306,45 @@ def iterLCS(pdf):
         if len(tempVal) <= 1:
             break
 
-    longList.append(tempVal)
-    sw1 = sw1.replace(tempVal, '#', 1)
-    sw2 = sw2.replace(tempVal, '!', 1)
+        longList.append(tempVal)
+        sw1 = sw1.replace(tempVal, '#', 1)
+        sw2 = sw2.replace(tempVal, '!', 1)
     pdf['common'] = longList
     pdf['deleted'] = [item for item in sw1.split('#') if len(item) > 0]
     pdf['added'] = [item for item in sw2.split('!') if len(item) > 0]
     return pdf
+
+def deterministic_pac(concept):
+    def generate_df(concept):
+        rows = []
+        for word in concept.attributes():
+            operations = sorted(list(concept.objects_intent(set([word]))))
+            rows.append({'source': word, 'operations': ','.join(operations)})
+
+        df = pd.DataFrame(rows)
+        return df
+
+    def structure_df_to_pac(df):
+        pac = []
+        for (operations, sub_df) in sorted(df.groupby(['operations']), key=lambda x: len(list(x[1]['source'])), reverse=True):
+            # for (operations, sub_df) in sorted(df.groupby(['operations'])):
+            consequent_attrs = tuple(sorted(list(sub_df['source'])))
+            antecedent_attrs = tuple([consequent_attrs[0]])
+            pac.append((antecedent_attrs, consequent_attrs))
+
+        return pac
+
+    df = generate_df(concept)
+    pac = structure_df_to_pac(df)
+    return pac
+
+def init_concept_from_wordpairs(wordpairs):
+    concept = FCA()
+    for (source, target) in wordpairs:
+        if not "*" in source and not "*" in target:
+            mutations = iterLCS({'source': source, 'target': target})
+            for addition in mutations['added']:
+                concept.add_relation("insert_"+addition, source)
+            for deletion in mutations['deleted']:
+                concept.add_relation("delete_"+deletion, source)
+    return(concept)
