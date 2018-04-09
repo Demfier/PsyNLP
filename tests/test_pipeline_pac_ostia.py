@@ -1,5 +1,7 @@
 import pytest
 from ..psynlp.pipelines import pac_ostia
+from ..psynlp.helpers import builtins
+builtins.init_verbose(1)
 
 
 def test_fetch_accuray():
