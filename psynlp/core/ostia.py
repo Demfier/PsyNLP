@@ -15,12 +15,13 @@ from ..helpers.text import is_prefixed_with, eliminate_prefix, eliminate_suffix,
 
 
 class OSTIA(object):
-    """docstring for OSTIA"""
+    """Class to represent OSTIA"""
 
     def __init__(self, T):
         """
         Applies Onward Subsequential Transducer Inference Algorithm
         Initializes a graph with merged states.
+
         Parameters:
         -----------------------------------
         object_name : T
@@ -63,34 +64,55 @@ class OSTIA(object):
 
     def states(self):
         """
-        :return states: A list of all states
-        """
+        Returns all the states in the FST
 
+        Returns:
+        -----------------------------------
+        states : list
+            A list of all states
+        """
         return list(self.graph.states())
 
     def state(self, index):
         """
-        :return state: The index-th state
+        Returns all the states in the FST
+        Parameters:
+        -----------------------------------
+        index : int
+            Index of the state to fetch
+
+        Returns:
+        -----------------------------------
+        state : int
+            The index-th state
         """
         state = self.states()[index]
         return state
 
     def first(self):
         """
-        :return first_element: First element in the OTST
+        Returns the first element in the OTST graph
         """
         return self.state(0)
 
     def last(self):
         """
-        :return last_element: Last element in the OTST
+        Returns the last element in the OTST graph
         """
         return self.state(-1)
 
     def next(self, a):
         """
-        :param T: An element in the OTST
-        :return next_element: Next element to a, in the OTST
+        Returns the state next to a in the OTST graph
+        Parameters:
+        -----------------------------------
+        a : int
+            Base state
+
+        Returns:
+        -----------------------------------
+        next_element : state
+            Next element to a, in the OTST
         """
 
         all_states = self.states()
@@ -105,11 +127,17 @@ class OSTIA(object):
 
     def merge(self, a, b):
         """
-        :param a: A state in the OTST
-        :param b: Another state in the OTST
-        :return merged_otst: OTST with states a & b merged
-        """
+        Merges two states with same input-output edges
+        Parameters:
+        -----------------------------------
+        a, b: int
+            states in the OTST
 
+        Returns:
+        -----------------------------------
+        merged_otst : OTST
+            updated OTST with states a & b merged
+        """
         graph = self.graph
 
         for (from_state, _) in graph.in_edges(b):
@@ -131,18 +159,16 @@ class OSTIA(object):
 
     def subseq(self):
         """
-        :return bool: True if tou is subsequent, else False
+        Tells if if tou is subsequent or not
         """
-
         violation = self.find_subseq_violation()
         return(violation is None)
 
     def find_subseq_violation(self):
         """
+        Finds subsequential violations in the OTST graph
         (r,a,v,s) and (r,a,w,t) are 2 edges of tou that violate subseq condition,
         with s<t
-
-        :return (r, a, v, s, w, t): Tuple
         """
 
         graph = self.graph
@@ -161,11 +187,19 @@ class OSTIA(object):
 
     def push_back(self, element, edge):
         """
-        :param element: An element in the OTST
-        :param edge: An edge in the OTST, as a tuple (r, a, v, s)
-        :return tou: OTST with element pushed back from the edge
-        """
+        Pushes-back the element from the edge
+        Parameters:
+        -----------------------------------
+        element : str
+            The element to push back
+        edge: tuple
+            edge in OTST, (r, a, v, s)
 
+        Returns:
+        -----------------------------------
+        tou : OTST
+            OTST with element pushed back from the edge
+        """
         graph = self.graph
         input_state, input_text, output_text, output_state = edge
 
@@ -236,10 +270,17 @@ class OSTIA(object):
 
     def form_input_digraph(self, T):
         """
-        :param T: A set of all input/output pairs
-        :return graph: A directed networkx graph
-        """
+        Forms a directed network from the given input-output pairs
+        Parameters:
+        -----------------------------------
+        T: list
+            A set of all input/output pairs
 
+        Returns:
+        -----------------------------------
+        graph: FST
+            A directed networkx graph formed from the given io pairs
+        """
         graph = FST()
         input_arcs = []
         output_arcs = []
@@ -276,6 +317,20 @@ class OSTIA(object):
         return(graph)
 
     def word_from_path(self, graph, path):
+        """
+        Get the word represented by a path in OTST
+        Parameters:
+        -----------------------------------
+        graph : FST
+            The graph for consideration
+        path : path_generator
+            The path from which to form the word
+
+        Returns:
+        -----------------------------------
+        path_input_word : str
+            The input word contained in the given path
+        """
         path_input_word = ''
         for i in range(0, len(path) - 1):
             edge = graph[path[i]][path[i + 1]]
@@ -283,6 +338,14 @@ class OSTIA(object):
         return path_input_word
 
     def matches_any_path(self, new_word):
+        """
+        Sees if the new_word matches any of the paths in the graph and returns
+        the most similar path
+        Parameters:
+        -----------------------------------
+        new_word : str
+            The word to be matched
+        """
         graph = self.graph
         words = []
         for path in list(nx.all_simple_paths(graph, 0, -1)):
@@ -300,6 +363,16 @@ class OSTIA(object):
         return((min_ldist, closest_word))
 
     def fit_closest_path(self, source, metadatas):
+        """
+        Tries to apply the transitions of the most compatible path to get the
+        predicted word
+        Parameters:
+        -----------------------------------
+        source : str
+            Source word on which to apply the inflection operations
+        metadatas: list
+            Array of metadatas to be considered for a language
+        """
         graph = self.graph
         graph = graph.contextual_subgraph(metadatas)
 
