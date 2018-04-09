@@ -2,9 +2,7 @@ import pytest
 from ..psynlp import inflection_ostia
 
 
-def test_fetch_accuray():
-    print(inflection_ostia.fetch_accuracy(language='english', quality='low'))
-
+def test_fetch_accuracy():
     languages = ['english', 'polish', 'bengali']
     qualities = ['low', 'medium', 'high']
     accuracies = []
