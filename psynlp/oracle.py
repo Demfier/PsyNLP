@@ -18,7 +18,7 @@ def is_member(hypothesis, attributes_subset, attributes_superset):
     return(attributes_subset == attributes_superset(attributes_subset))
 
 
-def generate_subset(self, any_set):
+def generate_subset(any_set):
     subset = set()
     random.shuffle(any_set)
     for element in any_set:
@@ -27,8 +27,8 @@ def generate_subset(self, any_set):
     return(subset)
 
 
-def generate_positive_counterexample(
-        H, M, li_times, is_member, is_model, attributes_superset, nqueries, pn_ratio):
+def generate_positive_counterexample(H, M, li_times, is_member, is_model,
+                                     attributes_superset, nqueries, pn_ratio):
     for i in range(int(li_times)):
         X = generate_subset(M)
         member = is_member(H, X, attributes_superset)
@@ -41,8 +41,8 @@ def generate_positive_counterexample(
 def is_approx_equivalent(is_member, M, nqueries, attributes_extent,
                          attributes_superset, is_model, pn_ratio, max_pn_ratio, epsilon=0.5, delta=0.5):
 
-    def query_oracle(hypothesis):
-        nqueries += nqueries + 1
+    def query_oracle(hypothesis, nqueries, li_times, pn_ratio, max_pn_ratio):
+        nqueries += 1
         li_times = li_times(nqueries, epsilon, delta)
 
         if pn_ratio < max_pn_ratio:
@@ -59,7 +59,7 @@ def is_approx_equivalent(is_member, M, nqueries, attributes_extent,
                         antecedent_superset = attributes_superset(
                             set(antecedent_attrs))
                         if len(attributes_extent(antecedent_superset)) != 0:
-                            return(antecedent_superset)
+                            return(antecedent_superset, nqueries, pn_ratio)
 
                 print("Redirecting to usual positive counter-example")
                 return(generate_positive_counterexample(H, M, li_times, is_member, is_model, attributes_superset, nqueries, pn_ratio))
