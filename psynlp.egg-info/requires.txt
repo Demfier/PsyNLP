@@ -1,7 +1,5 @@
 re
 pandas
-pytest
-autopep8
 networkx
 argparse
 importlib

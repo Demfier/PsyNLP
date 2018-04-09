@@ -1,0 +1,12 @@
+README.md
+setup.py
+psynlp/__init__.py
+psynlp.egg-info/PKG-INFO
+psynlp.egg-info/SOURCES.txt
+psynlp.egg-info/dependency_links.txt
+psynlp.egg-info/requires.txt
+psynlp.egg-info/top_level.txt
+tests/__init__.py
+tests/test_pipeline_deterministic.py
+tests/test_pipeline_ostia.py
+tests/test_pipeline_pac_ostia.py
