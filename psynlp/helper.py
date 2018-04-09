@@ -55,16 +55,18 @@ def levenshtein(s, t, inscost=1.0, delcost=1.0, substcost=1.0):
     answer = lrec('', '', s, t, 0)
     return answer[0], answer[1], answer[4]
 
+
 def memolrec(func):
     """Memoizer for Levenshtein."""
     cache = {}
     @wraps(func)
     def wrap(sp, tp, sr, tr, cost):
-        if (sr,tr) not in cache:
+        if (sr, tr) not in cache:
             res = func(sp, tp, sr, tr, cost)
-            cache[(sr,tr)] = (res[0][len(sp):], res[1][len(tp):], res[4] - cost)
-        return sp + cache[(sr,tr)][0], tp + cache[(sr,tr)][1], '', '', cost + cache[(sr,tr)][2]
+            cache[(sr, tr)] = (res[0][len(sp):], res[1][len(tp):], res[4] - cost)
+        return sp + cache[(sr, tr)][0], tp + cache[(sr, tr)][1], '', '', cost + cache[(sr, tr)][2]
     return wrap
+
 
 def is_prefixed_with(string, prefix):
     """
@@ -112,6 +114,7 @@ def eliminate_prefix(v, u):
 
     w = v.lstrip(u)
     return(w)
+
 
 # Iterative longest contiguous sequence. No one character matchings
 def lcs(s1, s2):
@@ -333,6 +336,7 @@ def iterLCS(pdf):
     pdf['deleted'] = [item for item in sw1.split('#') if len(item) > 0]
     pdf['added'] = [item for item in sw2.split('!') if len(item) > 0]
     return pdf
+
 
 def deterministic_pac(concept):
     def generate_df(concept):
