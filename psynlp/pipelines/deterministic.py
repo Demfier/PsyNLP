@@ -66,4 +66,5 @@ def fetch_accuracy(language='english', quality='high'):
     if total == 0:
         total = 1
     accuracy = 100*float(correct) / total
+    print("\n\nExact word-match accuracy: {}".format(accuracy))
     return accuracy
