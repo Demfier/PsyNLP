@@ -1,0 +1,13 @@
+language: python
+python:
+  - 3.6
+  - 3.4
+script:
+  - py.test -s --full-trace
+install:
+  - pip install pandas
+  - pip install pytest
+  - pip install autopep8
+  - pip install networkx
+  - pip install argparse
+  - pip install importlib
