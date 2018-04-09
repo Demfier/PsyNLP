@@ -3,6 +3,9 @@ from ..psynlp.pipelines import pac_ostia
 
 
 def test_fetch_accuray():
+    """
+    Tests the pac-ostia pipeline
+    """
     languages = ['english', 'polish', 'bengali']
     qualities = ['low', 'medium', 'high']
     accuracies = []

@@ -3,6 +3,9 @@ from ..psynlp.pipelines import ostia
 
 
 def test_fetch_accuray():
+    """
+    Tests the ostia pipeline
+    """
     languages = ['english', 'polish', 'bengali']
     qualities = ['low', 'medium', 'high']
     accuracies = []

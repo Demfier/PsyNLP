@@ -3,6 +3,9 @@ from ..psynlp.pipelines import deterministic
 
 
 def test_fetch_accuracy():
+    """
+    Tests the deterministic pipeline
+    """
     languages = ['english', 'polish', 'bengali']
     qualities = ['low', 'medium', 'high']
     accuracies = []

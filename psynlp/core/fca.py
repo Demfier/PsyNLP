@@ -40,26 +40,77 @@ class FCA(nx.Graph):
         self.add_node(object_name, type='object')
 
     def add_objects(self, object_names):
+        """
+        Adds multiple objects to the concept.
+        Parameters:
+        -----------------------------------
+        object_names : list
+            Array of object names to be added to the concept
+        """
         [self.add_object(object_name) for object_name in object_names]
 
     def add_attribute(self, attribute_name):
+        """
+        Adds a new attribute to the concept.
+        Parameters:
+        -----------------------------------
+        attribute_name : str
+            Name of the attribute to be added to the concept
+        """
         self.add_node(attribute_name, type='attribute')
 
     def add_attributes(self, attribute_names):
+        """
+        Adds multiple attributes to the concept.
+        Parameters:
+        -----------------------------------
+        attribute_names : list
+            Array of attribute names to be added to the concept
+        """
         [self.add_attribute(attribute_name)
          for attribute_name in attribute_names]
 
     def add_relation(self, object_name, attribute_name):
+        """
+        Adds a relation to the concept. Since our concept lattice is a
+        Directed networkx graph, relations are nothing but edges of the graph.
+        Parameters:
+        -----------------------------------
+        object_name : str
+            Name of the object in the relation
+        attribute_name : str
+            Name of the attribute in the relation
+        """
         self.add_object(object_name)
         self.add_attribute(attribute_name)
         self.add_edge(object_name, attribute_name)
 
     def add_relations(self, relations):
+        """
+        Adds multiple relations to the concept.
+        Parameters:
+        -----------------------------------
+        relations : list
+            list of relations to be added to the concept
+        """
         for (object_name, attribute_name) in relations:
             self.add_relation(object_name, attribute_name)
 
     def objects(self, attribute_name=None):
+        """
+        Returns objects corresponding to an attribute.
+        Parameters:
+        -----------------------------------
+        attribute_name : str
+            Attribute whose objects are to found
+
+        Returns:
+        -----------------------------------
+        objects : list
+            Array of objects corresponding to the given attribute_name
+        """
         if attribute_name is None:
+            # Return all the objects in the lattice
             objects = [
                 node for (
                     node, data) in self.nodes(
@@ -71,7 +122,20 @@ class FCA(nx.Graph):
         return(objects)
 
     def attributes(self, object_name=None):
+        """
+        Returns attributes corresponding to an object.
+        Parameters:
+        -----------------------------------
+        object_name : str
+            Object whose attributes are to found
+
+        Returns:
+        -----------------------------------
+        attributes : list
+            Array of attributes corresponding to the given object_name
+        """
         if object_name is None:
+            # Return all attributes in the concept
             attributes = [
                 node for (
                     node, data) in self.nodes(
@@ -84,8 +148,17 @@ class FCA(nx.Graph):
 
     def objects_intent(self, object_names):
         """
-        Given a subset A of objects from G,
+        Given a subset A of objects from G, calculates:
         A' = attributes shared by objects in A = objects intent
+        Parameters:
+        -----------------------------------
+        object_names : list
+            Arrary of objects whose intent is to be found
+
+        Returns:
+        -----------------------------------
+        shared_attributes : set
+            The set of attributes sharing the objects in object_names
         """
         if len(object_names) is 0:
             return(self.attributes())
@@ -97,8 +170,17 @@ class FCA(nx.Graph):
 
     def attributes_extent(self, attribute_names):
         """
-        Given a subset B of attributes from m,
-        B' = objects shared by attributes in B = attributes extent
+        Given a subset B of attributes from m, calculates:
+        B' = objects shared by attributes in B = attributes extent.
+        Parameters:
+        -----------------------------------
+        attribute_names : list
+            Arrary of attributes whose extent is to be found
+
+        Returns:
+        -----------------------------------
+        shared_objects : set
+            The set of objects sharing the attributes in attribute_names
         """
         if len(attribute_names) is 0:
             return(self.objects())
@@ -110,21 +192,51 @@ class FCA(nx.Graph):
 
     def objects_superset(self, object_names):
         """
-        Given a subset A of objects from G,
+        Equal to `closure` operation for an object set discussed in theory.
+        Given a subset A of objects from G, calculates
         A'  = attributes shared by objects in A = objects intent
-        A'' = objects that share attributes in A'
+        A'' = objects that share attributes in A'.
+        Parameters:
+        -----------------------------------
+        objects_names : list
+            List of objects whose closure is to be calculated
+
+        Returns:
+        -----------------------------------
+        closure of object_names
         """
         return(self.attributes_extent(self.objects_intent(object_names)))
 
     def attributes_superset(self, attribute_names):
         """
+        Equal to `closure` operation for an attribute set discussed in theory.
         Given a subset B of attributes from G,
         B'  = objects shared by attributes in B = attributes extent
-        B'' = attributes that share objects in B'
+        B'' = attributes that share objects in B'.
+        Parameters:
+        -----------------------------------
+        attributes_names : list
+            List of attributes whose closure is to be calculated
+
+        Returns:
+        -----------------------------------
+        closure of attribute_names
         """
         return(self.objects_intent(self.attributes_extent(attribute_names)))
 
     def all_subsets(self, master_set):
+        """
+        Finds all the subsets for a given master_set.
+        Parameters:
+        -----------------------------------
+        master_set : set
+            Set whose subsets are to calculated
+
+        Returns:
+        -----------------------------------
+        all_subsets : list
+            Array of all the subsets of the given master_set
+        """
         all_subsets = []
 
         for subset_size in range(1, len(master_set) + 1):
@@ -133,11 +245,11 @@ class FCA(nx.Graph):
                     itertools.combinations(
                         master_set,
                         subset_size)))
-
         return(all_subsets)
 
     def set_of_intents(self):
-        """All matching attribute subsets such that B = B''
+        """
+        Gives all matching attribute subsets such that B = B''.
         """
         all_attribute_subsets = self.all_subsets(self.attributes())
 
@@ -149,9 +261,15 @@ class FCA(nx.Graph):
         return(matching_attribute_subsets)
 
     def relations(self):
+        """
+        Gives all the relations in the lattice
+        """
         return(self.edges)
 
     def pretty_print(self):
+        """
+        Custom function to pretty print the lattice
+        """
         print("\n------------------------------------------------")
         print("Brief overview of this concept")
         print("------------------------------------------------")
@@ -165,7 +283,16 @@ class FCA(nx.Graph):
 
     def implications(self, attribute_names=None):
         """
-        A set of all possible implications between attributes within B
+        Gives the set of all possible implications between attributes in B
+        Parameters:
+        -----------------------------------
+        attribute_names : set
+            Set of all the attributes among which to find the implications
+
+        Returns:
+        -----------------------------------
+        matching_attributes_pairs : set
+            Set of implications (represented as tuples)
         """
         if attribute_names is None:
             attribute_names = self.attributes()
@@ -186,13 +313,18 @@ class FCA(nx.Graph):
 
         return(matching_attribute_pairs)
 
-    def is_model_of_implication(
-            self,
-            attribute_names,
-            antecedent_attrs,
-            consequent_attrs):
+    def is_model_of_implication(self, attribute_names, antecedent_attrs,
+                                consequent_attrs):
         """
-        The set A is closed under a set of implications L if A is closed under every implication in L
+        Determines where a given set A follows an implication L.
+        Parameters:
+        -----------------------------------
+        attribute_names : set
+            Set of all the attributes among which to find the implications
+        antecedent_attrs : set
+            Attributes in the premise of an implication
+        consequent_attrs : set
+            Attributes in the conclusion of an implication
         """
         attribute_names = set(attribute_names)
         antecedent_attrs = set(antecedent_attrs)
@@ -200,6 +332,16 @@ class FCA(nx.Graph):
         return((not antecedent_attrs.issubset(attribute_names)) or (consequent_attrs.issubset(attribute_names)))
 
     def is_model_of_implications(self, attribute_names, implications):
+        """
+        Determines where a given set A is closed under a set of implications L
+        by checking if A is closed under every implication in L.
+        Parameters:
+        -----------------------------------
+        attribute_names : set
+            Set of all the attributes among which to find the implications
+        implications : list[tuple]
+            Array of implications
+        """
         for (antecedent_attrs, consequent_attrs) in implications:
             if not self.is_model_of_implication(
                     attribute_names, antecedent_attrs, consequent_attrs):
@@ -207,7 +349,21 @@ class FCA(nx.Graph):
         return(True)
 
     def models(self, set_of_implications=None, attribute_names=None):
-        """The set of all sets closed under L, the models of L, is denoted by Mod(L).
+        """
+        Gives the set of all sets closed under L i.e the models of L,
+        denoted by Mod(L).
+        Parameters:
+        -----------------------------------
+        set_of_implications : list
+            Impliction set whose models are to determined
+        attribute_names : set
+            Testing attribute set to tell whether it is a model of the
+            set_of_implications or not
+
+        Returns:
+        -----------------------------------
+        matching_attribute_subsets : set
+            Set of models of the given implication set
         """
         if set_of_implications is None:
             set_of_implications = self.implications()
@@ -231,14 +387,27 @@ class FCA(nx.Graph):
 
     def valid_implication(self, antecedent_attrs, consequent_attrs):
         """
+        Determines if an implication is valid or not
         For an implication to be valid, X' should be subset of Y'.
+        Parameters:
+        -----------------------------------
+        antecedent_attrs : set
+            Premise of the implication whose validity to check
+        consequent_attrs : set
+            Conclusion of the implication whose validity to check
         """
         antecedent_attrs_prime = self.attributes_extent(set(antecedent_attrs))
         consequent_attrs_prime = self.attributes_extent(set(consequent_attrs))
         return(antecedent_attrs_prime.issubset(consequent_attrs_prime))
 
     def theory(self):
-        """The set of all implications valid in K is the theory of K, denoted by Th(K).
+        """
+        The set of all implications valid in K is the theory of K,
+        denoted by Th(K).
+        Returns:
+        -----------------------------------
+        matching_implications: set
+            Theory of the concept
         """
         all_implications = self.implications()
         matching_implications = set()
@@ -252,11 +421,21 @@ class FCA(nx.Graph):
     def is_basis(self, implications):
         """
         A set L ⊆ Imp(M) is a basis of K if the models of L are the intents of K.
+        Parameters:
+        -----------------------------------
+        implications : set
+            The set of implications under testing
         """
         return(self.models(implications) == self.set_of_intents())
 
     def is_irredundant_basis(self, implications):
-        """A basis L of K is called irredundant if no strict subset of L is a basis of K
+        """
+        A basis L of K is called irredundant if no strict subset of L is a
+        basis of K.
+        Parameters:
+        -----------------------------------
+        implications : set
+            The set of implications under testing
         """
         for subset_size in range(1, len(implications)):
             for implications_subset in itertools.combinations(
@@ -265,85 +444,21 @@ class FCA(nx.Graph):
                     return(False)
         return(True)
 
-    def closure_under_implications(self, attributes, implications):
-        stable = False
+    def implications_not_respecting_attributes(self, attribute_names,
+                                               implications):
+        """
+        Gives a set of implications not respecting a given attribute set.
+        Parameters:
+        -----------------------------------
+        attribute_names : set
+            Set of attributes under consideration
+        implications : set
+            The set of implications under testing
 
-        while not stable:
-            stable = True
-            remove_implications = set()
-            for (antecedent_attrs, consequent_attrs) in implications:
-                if set(antecedent_attrs).issubset(attributes):
-                    attributes = attributes.union(set(consequent_attrs))
-                    stable = False
-                    remove_implications.add(
-                        (antecedent_attrs, consequent_attrs))
-
-        implications = implications - remove_implications
-
-        return(attributes)
-
-    def nextClosure(
-            self,
-            previous_closure,
-            attribute_names=None,
-            closure_operator=None):
-        if previous_closure is None:
-            previous_closure = set()
-
-        if attribute_names is None:
-            attribute_names = self.attributes()
-
-        attribute_names = list(attribute_names)
-        attribute_names.reverse()
-
-        next_closure = set()
-
-        for attribute_name in attribute_names:
-            if attribute_name in previous_closure:
-                previous_closure = previous_closure - {attribute_name}
-            else:
-                next_set = previous_closure.union({attribute_name})
-                if closure_operator is None:
-                    print("''")
-                    next_closure = self.attributes_superset(next_set)
-                else:
-                    next_closure = self.closure_under_implications(
-                        next_set, closure_operator)
-
-                if self.hasNoElementLecticallyLessThan(
-                        next_closure - previous_closure, attribute_names, attribute_name):
-                    return(next_closure)
-        return(set())
-
-    def hasNoElementLecticallyLessThan(self, subset, complete_list, value):
-        sublist = list(subset)
-
-        index = complete_list.index(value)
-        for element in sublist:
-            element_index = complete_list.index(element)
-            if element_index < index:
-                return(False)
-        return(True)
-
-    def canonical_basis(self, attribute_names=None):
-        implications = set()
-        attributes_subset = set()
-        attribute_names = self.attributes()
-
-        while attributes_subset != set(attribute_names):
-            attributes_superset = self.attributes_superset(attributes_subset)
-
-            if attributes_subset != attributes_superset:
-                implications = implications.union(
-                    {(tuple(attributes_subset), tuple(attributes_superset))})
-            attributes_subset = self.nextClosure(
-                attributes_subset, attribute_names, implications)
-            print(set(attribute_names) - attributes_subset)
-
-        return(implications)
-
-    def implications_not_respecting_attributes(
-            self, attribute_names, implications):
+        Returns:
+        disrespectful_implications : set
+            Set of implications not respecting attribute_names
+        """
         disrespectful_implications = set()
         for (antecedent_attrs, consequent_attrs) in implications:
             if not self.is_model_of_implication(
@@ -352,12 +467,24 @@ class FCA(nx.Graph):
                     (antecedent_attrs, consequent_attrs))
         return(disrespectful_implications)
 
-    def replace_disrespectful_implications(
-            self,
-            implications,
-            disrespectful_implications,
-            attribute_names):
-        # replace all disrepectful implications A->B by A->BnC
+    def replace_disrespectful_implications(self, implications,
+                                           disrespectful_implications,
+                                           attribute_names):
+        """
+        Replaces all the disrepectful implications A --> B by A --> BnC.
+        Parameters:
+        -----------------------------------
+        implications : set
+            The set of implications under consideration
+        disrespectful_implications : set
+            The set of implications not respecting the given attribute_names
+        attribute_names : set
+            Set of attributes under consideration
+
+        Returns:
+        final_implications : set
+            Updated set of implications
+        """
         final_implications = set()
         for implication in implications:
             if implication in disrespectful_implications:
@@ -370,6 +497,19 @@ class FCA(nx.Graph):
         return(final_implications)
 
     def find_not_members(self, implications, attribute_names, is_member):
+        """
+        Returns an implication from the given set of implications that is not a
+        member of the hypothesis, i.e gives a negative test with the membership
+        oracle.
+        Parameters:
+        -----------------------------------
+        implications : set
+            The set of implications under consideration
+        attribute_names : set
+            Set of attributes under consideration
+        is_member : function
+            Membership oracle
+        """
         for (antecedent_attrs, consequent_attrs) in implications:
             antecedent_attrs = set(antecedent_attrs)
             consequent_attrs = set(consequent_attrs)
@@ -380,6 +520,18 @@ class FCA(nx.Graph):
                 return((tuple(sorted(antecedent_attrs)), tuple(sorted(consequent_attrs))))
 
     def clean_hypothesis(self, H):
+        """
+        Removes duplicate implications from the hypothesis H.
+        Parameters:
+        -----------------------------------
+        H : set[tuple]
+            The hypothesis to be cleaned
+
+        Returns:
+        -----------------------------------
+        H2 : set[tuple]
+            Cleaned hypothesis
+        """
         all_shared_objects = set()
         H2 = set()
         for (antecedent_attrs, consequent_attrs) in H:
@@ -394,6 +546,20 @@ class FCA(nx.Graph):
         return(H2)
 
     def horn1(self, is_member, is_equivalent):
+        """
+        The famous HORN1 algorithm to find implications for the concept
+        Parameters:
+        -----------------------------------
+        is_member : function
+            Membership oracle
+        is_equivalent : function
+            Equivalence oracle
+
+        Returns:
+        -----------------------------------
+        H : set
+            The computed set of implications for the given concept lattice
+        """
         H = set()
 
         C, self.nqueries, self.pn_ratio = is_equivalent(H, self.nqueries,
@@ -464,5 +630,20 @@ class FCA(nx.Graph):
         return(H)
 
     def pac_basis(self, is_member, epsilon=0.8, delta=0.5):
-        return(self.horn1(is_member, oracle.is_approx_equivalent(is_member, self.attributes(), self.nqueries, self.attributes_extent, self.attributes_superset, self.is_model_of_implications, self.pn_ratio, self.max_pn_ratio, epsilon, delta)))
+        """
+        The even more famous PAC algorithm to compute canonical basis for a
+        given concept lattice
+        Parameters:
+        -----------------------------------
+        is_member : function
+            Membership oracle
+        epsilon : float (0, 1)
+            Tolerance for error in accuracy for the pac-basis
+        delta : float (0, 1)
+            Tolerance for confidence in confidence for the pac-basis
 
+        Returns:
+        -----------------------------------
+        The computed pac-basis for given concept lattice
+        """
+        return(self.horn1(is_member, oracle.is_approx_equivalent(is_member, self.attributes(), self.nqueries, self.attributes_extent, self.attributes_superset, self.is_model_of_implications, self.pn_ratio, self.max_pn_ratio, epsilon, delta)))

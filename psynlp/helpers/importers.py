@@ -8,6 +8,19 @@ from .misc import deterministic_pac
 
 
 def fetch_testing_data(language='english'):
+    """
+    Fetches testing data given a language
+    Parameters:
+    -----------------------------------
+    language : str
+        Name of the language whose testing data to fetch
+
+    Returns:
+    -----------------------------------
+    T : list[tuple]
+        List of tuples from the testing dataset of the language sorted
+        alphabetically
+    """
     filepath = "psynlp/data/{}-dev".format(language)
     T = []
     file = open(filepath, 'r')
@@ -22,6 +35,20 @@ def fetch_testing_data(language='english'):
 
 
 def parse_metadata_words(language='english', quality='low'):
+    """
+    Identifies words corresponding to different metadata in the language
+    Parameters:
+    -----------------------------------
+    language : str
+        Name of the language whose testing data to fetch
+    quality : str
+        size of the dataset to consider
+
+    Returns:
+    -----------------------------------
+    metadata_words : dict
+        A dictionary with all the words grouped by metadata
+    """
     metadata_words = {}
     filepath = "psynlp/data/{}-train-{}".format(language, quality)
     file = open(filepath, 'r')
@@ -37,6 +64,21 @@ def parse_metadata_words(language='english', quality='low'):
 
 
 def parse_metadata_fca(metadata_words, cluster_type='pac'):
+    """
+    Computes PAC-basis based on the different metadata in language
+    Parameters:
+    -----------------------------------
+    metadata_words : dict
+        A dictionary with all the words grouped by metadata
+    cluster_type : str
+        clustering algo to use while grouping
+
+    Returns:
+    -----------------------------------
+    metadata_fca : dict
+        A dictionary with canonical-basis computed for each of the metadata
+        group in the language
+    """
     metadata_fca = {}
     for metadata in metadata_words:
         wordpairs = metadata_words[metadata]
@@ -55,6 +97,21 @@ def parse_metadata_fca(metadata_words, cluster_type='pac'):
 
 
 def fetch_input_output_pairs(language='english', quality='low'):
+    """
+    Fetches input-output examples from training dataset of the given language
+    Parameters:
+    -----------------------------------
+    language : str
+        Name of the language whose testing data to fetch
+    quality : str
+        size of the dataset to consider
+
+    Returns:
+    -----------------------------------
+    T : list[tuple]
+        List of tuples from the training dataset of the language sorted
+        alphabetically
+    """
     filepath = "psynlp/data/{}-train-{}".format(language, quality)
     T = list()
     file = open(filepath, 'r')
@@ -69,6 +126,19 @@ def fetch_input_output_pairs(language='english', quality='low'):
 
 
 def init_concept_from_wordpairs(wordpairs):
+    """
+    Initializes a concept from a given set of input-output examples by adding
+    relations.
+    Parameters:
+    -----------------------------------
+    wordpairs : list[tuple]
+        List of input output examples
+
+    Returns:
+    -----------------------------------
+    concept : object[FCA]
+        Initialized concept
+    """
     concept = FCA()
     for (source, target) in wordpairs:
         if "*" not in source and "*" not in target:

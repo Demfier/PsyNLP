@@ -11,11 +11,25 @@ import networkx as nx
 
 
 class FST(nx.DiGraph):
+    """
+    An FST has two important properties attached to it,
+
+    - State, to represent a node
+    - Edges, that contain the input-output transitions
+    """
     def add_state(self, newest_state=None):
         """
-        Adds a new state, depending on the max added state and returns that state id
-        """
+        Adds a new state, depending on the max added state.
+        Parameters:
+        -----------------------------------
+        newest_state : int
+            Id of the state to be added to the Transducer
 
+        Returns:
+        -----------------------------------
+        newest_state : int
+            Id of the newest state
+        """
         if newest_state is None:
             newest_state = self.new_state()
         self.add_node(newest_state, type='state')
@@ -23,11 +37,9 @@ class FST(nx.DiGraph):
 
     def new_state(self):
         """
-        :return: Returns possible new state in Transducer network
+        Returns possible new state in Transducer network
         """
-
         states = self.states()
-
         if states:
             return max(states) + 1
         else:
@@ -35,7 +47,11 @@ class FST(nx.DiGraph):
 
     def states(self):
         """
-        :return states: All states present in the Transducer
+        Gives all the states states present in the Transducer.
+        Returns:
+        -----------------------------------
+        states : list[int]
+            Arrary of state-ids in the transducer
         """
 
         states = [node for (node, data) in self.nodes(
@@ -44,25 +60,33 @@ class FST(nx.DiGraph):
 
     def add_metadata(self, metadata):
         """
-        Adds a metadata node, to connect to different states
-        :param metadata: The metadata to be added
+        Adds a metadata node that would connect to different states.
+        Parameters:
+        -----------------------------------
+        metadata : str
+            The metadata to add to the transducer
         """
-
         self.add_node(metadata, type='metadata')
 
     def metadatas(self):
         """
-        :return metadatas: All metadata nodes present in the Transducer
+        Returns all metadata nodes present in the Transducer
         """
-
         metadatas = [node for (node, data) in self.nodes(
             data=True) if 'type' in data and data['type'] == 'metadata']
         return(metadatas)
 
     def contextual_subgraph(self, metadatas=[]):
         """
-        :param metadatas: A list of metadatas for context
-        :return contextual_subgraph: Transducer network corresponding to given metadatas
+        Gives a contextual subgraph based on the given metadata
+        Parameters:
+        -----------------------------------
+        metadatas : list[str]
+            A list of metadatas for context
+        Returns:
+        -----------------------------------
+        contextual_subgraph : nx.Graph
+            Transducer network corresponding to given metadatas
         """
 
         contextual_states = set(self.states())
@@ -77,18 +101,28 @@ class FST(nx.DiGraph):
 
     def add_arc(self, from_state, input, output, to_state):
         """
-        :param from_state: The input state of an arc
-        :param input: An input character(s)
-        :param output: An output character(s)
-        :param to_state: The output state of an arc
+        Adds an arc in the transducer contains input-output transitions
+        Parameters:
+        -----------------------------------
+        from_state : int
+            The input state of an arc
+        input: str
+            An input character(s)
+        output : str
+            An output character(s)
+        to_state: int
+            The output state of an arc
         """
         self.add_edge(from_state, to_state, input=input, output=output)
 
     def arcs(self):
         """
-        :return edges: A list of edges (arcs) that are present in the Transducer network
+        Gives all the edges present the transducer
+        Returns:
+        -----------------------------------
+        edges : list
+            A list of edges (arcs) that are present in the Transducer network
         """
-
         edges = []
         states = self.states()
         for edge in self.edges:
