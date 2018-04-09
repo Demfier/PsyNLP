@@ -208,8 +208,11 @@ class OSTIA(object):
                         output_chunk,
                         to_state)
 
-        self.add_state(0)
-        self.add_state(-1)
+        graph.add_state(0)
+        graph.add_state(-1)
+        for metadata in metadatas:
+            graph.add_edge(metadata, 0)
+            graph.add_edge(metadata, -1)
 
         for (input_chunk, output_chunk, to_state) in input_arcs:
             graph.add_arc(0, input_chunk, output_chunk, to_state)
