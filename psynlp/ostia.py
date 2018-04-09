@@ -28,7 +28,7 @@ class OSTIA(object):
             self.graph = self.form_input_digraph(T)
 
         tou = tou_dup = self
-        print("Prepared DiGraph")
+        # print("Prepared DiGraph")
         exit_condition_1 = exit_condition_2 = False
         q = tou.first()
         while q < tou.last():
@@ -217,7 +217,7 @@ class OSTIA(object):
         for (from_state, input_chunk, output_chunk) in output_arcs:
             graph.add_arc(from_state, input_chunk, output_chunk, -1)
 
-        print("Done forming the directed FST graph")
+        # print("Done forming the directed FST graph")
         return(graph)
 
     def form_input_digraph(self, T):
@@ -257,7 +257,7 @@ class OSTIA(object):
         for (from_state, input_chunk, output_chunk) in output_arcs:
             graph.add_arc(from_state, input_chunk, input_chunk, -1)
 
-        print("Done forming the directed FST graph")
+        # print("Done forming the directed FST graph")
         return(graph)
 
     def word_from_path(self, graph, path):
@@ -275,7 +275,7 @@ class OSTIA(object):
         min_ldist = len(new_word)
         closest_word = new_word
         for word in words:
-            # word = word[:-1]
+            word = word[:-1]
             lp, lr, ls, rp, rr, rs = align(word, new_word)
             score = levenshtein(lp, rp)[-1] + levenshtein(ls, rs)[-1] + levenshtein(lr, rr)[-1]
             score = float(score) / len(new_word)
