@@ -6,7 +6,7 @@ from ..psynlp.ostia import OSTIA
 from ..psynlp.helper import fetch_input_output_pairs, fetch_testing_data, levenshtein
 
 
-def fetch_accuracy(language='emglish', quality='high'):
+def fetch_accuracy(language='english', quality='high'):
     model = fetch_input_output_pairs(language=language, quality=quality)
     model = OSTIA(model)
 

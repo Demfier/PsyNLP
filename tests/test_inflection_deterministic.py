@@ -10,5 +10,5 @@ def test_fetch_accuracy():
     for language in languages:
         for quality in qualities:
             accuracies.append((language, quality, inflection_deterministic.fetch_accuracy(language=language, quality=quality)))
-    print accuracies
+    print(accuracies)
     return True
