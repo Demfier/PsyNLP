@@ -28,7 +28,7 @@ class OSTIA(object):
             self.graph = self.form_input_digraph(T)
 
         tou = tou_dup = self
-        print("Prepared DiGraph", tou.first(), tou.last())
+        print("Prepared DiGraph")
         exit_condition_1 = exit_condition_2 = False
         q = tou.first()
         while q < tou.last():
@@ -56,8 +56,6 @@ class OSTIA(object):
 
             if not tou.subseq():
                 tou = tou_dup
-
-        return tou
 
     def states(self):
         """
@@ -250,8 +248,8 @@ class OSTIA(object):
                         input_chunk,
                         to_state)
 
-        self.add_state(0)
-        self.add_state(-1)
+        graph.add_state(0)
+        graph.add_state(-1)
 
         for (input_chunk, output_chunk, to_state) in input_arcs:
             graph.add_arc(0, input_chunk, input_chunk, to_state)
@@ -277,15 +275,9 @@ class OSTIA(object):
         min_ldist = len(new_word)
         closest_word = new_word
         for word in words:
+            # word = word[:-1]
             lp, lr, ls, rp, rr, rs = align(word, new_word)
-          # lp = lp.replace('_', '')
-          # lr = lr.replace('_', '')
-          # ls = ls.replace('_', '')
-          # rp = rp.replace('_', '')
-          # rr = rr.replace('_', '')
-          # rs = rs.replace('_', '')
-            score = levenshtein(
-                lp, rp)[-1] + levenshtein(ls, rs)[-1] + levenshtein(lr, rr)[-1]
+            score = levenshtein(lp, rp)[-1] + levenshtein(ls, rs)[-1] + levenshtein(lr, rr)[-1]
             score = float(score) / len(new_word)
             if score < min_ldist:
                 min_ldist = score
@@ -304,12 +296,6 @@ class OSTIA(object):
 
         for i, word in enumerate(source_words):
             lp, lr, ls, rp, rr, rs = align(word, source)
-          # lp = lp.replace('_', '')
-          # lr = lr.replace('_', '')
-          # ls = ls.replace('_', '')
-          # rp = rp.replace('_', '')
-          # rr = rr.replace('_', '')
-          # rs = rs.replace('_', '')
             score = levenshtein(
                 lp, rp)[-1] + levenshtein(ls, rs)[-1] + levenshtein(lr, rr)[-1]
             score = float(score) / len(source)
@@ -320,7 +306,6 @@ class OSTIA(object):
         if closest_word_index == -1:
             return((source, ''))
 
-        print(closest_word_index, len(source_words))
         closest_word = source_words[closest_word_index]
         fitting_path = list(nx.all_simple_paths(
             graph, 0, -1))[closest_word_index]

@@ -8,6 +8,7 @@ import time
 import operator
 import pandas as pd
 import networkx as nx
+from functools import wraps
 from ..psynlp import oracle
 from ..psynlp.fca import FCA
 import matplotlib.pyplot as plt
@@ -19,12 +20,20 @@ def align(lemma, form):
                  len(aform) - len(aform.lstrip('_')))
     tspace = max(len(alemma[::-1]) - len(alemma[::-1].lstrip('_')),
                  len(aform[::-1]) - len(aform[::-1].lstrip('_')))
-    return alemma[0:lspace], alemma[lspace:len(alemma) - tspace], alemma[len(
-        alemma) - tspace:], aform[0:lspace], aform[lspace:len(alemma) - tspace], aform[len(alemma) - tspace:]
+
+    lp = alemma[0:lspace].replace('_', '')
+    lr = alemma[lspace:len(alemma) - tspace].replace('_', '')
+    ls = alemma[len(alemma) - tspace:].replace('_', '')
+    rp = aform[0:lspace].replace('_', '')
+    rr = aform[lspace:len(alemma) - tspace].replace('_', '')
+    rs = aform[len(alemma) - tspace:].replace('_', '')
+
+    return((lp, lr, ls, rp, rr, rs))
 
 
 def levenshtein(s, t, inscost=1.0, delcost=1.0, substcost=1.0):
     """Recursive implementation of Levenshtein, with alignments returned."""
+    @memolrec
     def lrec(spast, tpast, srem, trem, cost):
         if len(srem) == 0:
             return spast + len(trem) * '_', tpast + \
@@ -46,6 +55,16 @@ def levenshtein(s, t, inscost=1.0, delcost=1.0, substcost=1.0):
     answer = lrec('', '', s, t, 0)
     return answer[0], answer[1], answer[4]
 
+def memolrec(func):
+    """Memoizer for Levenshtein."""
+    cache = {}
+    @wraps(func)
+    def wrap(sp, tp, sr, tr, cost):
+        if (sr,tr) not in cache:
+            res = func(sp, tp, sr, tr, cost)
+            cache[(sr,tr)] = (res[0][len(sp):], res[1][len(tp):], res[4] - cost)
+        return sp + cache[(sr,tr)][0], tp + cache[(sr,tr)][1], '', '', cost + cache[(sr,tr)][2]
+    return wrap
 
 def is_prefixed_with(string, prefix):
     """
@@ -265,7 +284,6 @@ def get_io_chunks(s1, s2):
     while len(s1) != 0 or len(s2) != 0:
         if len(s1) != 0 and len(s2) != 0:
             l = lcs(s1, s2)
-            print(s1, s2, l)
             if s1.find(l) == 0 and l:
                 # chunks.append((l, l))
                 for c in list(l):
