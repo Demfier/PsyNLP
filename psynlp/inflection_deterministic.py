@@ -14,11 +14,14 @@ def fetch_accuracy(language='english', quality='high'):
     total = correct = 0
 
     for (source, metadata, expected_dest) in testing_data:
+        print("Guessing for {} + {} now".format(source, metadata))
         scores = []
         if metadata not in pac:
+            print("Skipping word")
             continue
         concept, cluster, _ = pac[metadata]
         if not cluster:
+            print("Skipping word")
             continue
 
         for (antecedent_attrs, consequent_attrs) in cluster:
@@ -43,19 +46,16 @@ def fetch_accuracy(language='english', quality='high'):
                     index_of_min_score = i
             closest_word = scores[index_of_min_score][1][1]
             operations = concept.objects_intent(set(cluster_words))
-            # print(len(operations))
 
         computed_dest = inflect(source, operations)
         if computed_dest == expected_dest:
             correct += 1
-            print("{} + {}: Expected and found {}".format(source,
-                                                          metadata, computed_dest))
+            print("{} + {}: Expected and found {}".format(source, metadata, computed_dest))
         else:
-            print("{} + {}: Expected {} but found {}".format(source,
-                                                             metadata, expected_dest, computed_dest))
+            print("{} + {}: Expected {} but found {}".format(source, metadata, expected_dest, computed_dest))
         print("due to {} with score {}".format(closest_word, min_score))
         total += 1
-        # do operations
+
     if total == 0:
         total = 1
     accuracy = 100*float(correct) / total
