@@ -1,10 +1,5 @@
-import os
-import re
 import time
 import operator
-import pandas as pd
-import networkx as nx
-from functools import wraps
 
 from ..core import oracle
 from .text import iterLCS
@@ -65,9 +60,9 @@ def fetch_input_output_pairs(language='english', quality='low'):
     file = open(filepath, 'r')
     for line in file.readlines():
         source, dest, metadata = line.split("\t")
-    if "*" not in source and "*" not in dest:
-        metadata = metadata.strip("\n").split(";")
-        T.append((source, metadata, dest))
+        if "*" not in source and "*" not in dest:
+            metadata = metadata.strip("\n").split(";")
+            T.append((source, metadata, dest))
     print("Providing all words in structured manner, to OSTIA")
     T = sorted(T, key=operator.itemgetter(0))
     return T

@@ -15,8 +15,12 @@ def fetch_accuracy(language='english', quality='high'):
     levenshteinDist = {}
     T = fetch_testing_data(language=language)
     for (source, metadatas, expected_dest) in T:
-        predicted_dest, closest_word = model.fit_closest_path(
-            source, metadatas)
+        predicted_dest, closest_word = model.fit_closest_path(source, metadatas.split(";"))
+        if predicted_dest is None:
+            if source == expected_dest:
+                correct += 1
+            total += 1
+            continue
         if predicted_dest == expected_dest:
             print("{} + {}: expected and received {}".format(source,
                                                              metadatas, predicted_dest))

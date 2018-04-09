@@ -17,12 +17,16 @@ def fetch_accuracy(language='english', quality='high'):
     for (source, metadata, expected_dest) in testing_data:
         scores = []
         if metadata not in pac:
-            print("Skipping {}".format(source))
+            if source == expected_dest:
+                correct += 1
+            total += 1
             continue
 
         concept, cluster, _ = pac[metadata]
         if not cluster:
-            print("Skipping {}".format(source))
+            if source == expected_dest:
+                correct += 1
+            total += 1
             continue
 
         for (antecedent_attrs, consequent_attrs) in cluster:

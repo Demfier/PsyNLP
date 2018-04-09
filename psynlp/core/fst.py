@@ -56,7 +56,7 @@ class FST(nx.DiGraph):
         """
 
         metadatas = [node for (node, data) in self.nodes(
-            data=True) if data['type'] == 'metadata']
+            data=True) if 'type' in data and data['type'] == 'metadata']
         return(metadatas)
 
     def contextual_subgraph(self, metadatas=[]):
@@ -66,13 +66,9 @@ class FST(nx.DiGraph):
         """
 
         contextual_states = set(self.states())
-        contextual_states.add(0)
-        contextual_states.add(-1)
-
         for metadata in metadatas:
             try:
-                contextual_states = contextual_states.intersection(
-                    set(self[metadata]))
+                contextual_states = contextual_states.intersection(set(self[metadata]))
             except KeyError:
                 contextual_states = contextual_states
 
@@ -94,7 +90,7 @@ class FST(nx.DiGraph):
         """
 
         edges = []
-        states = self.states() + [0, -1]
+        states = self.states()
         for edge in self.edges:
             node_1, node_2 = edge
             if node_1 in states and node_2 in states:
