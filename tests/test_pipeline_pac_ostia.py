@@ -3,4 +3,12 @@ from ..psynlp.pipelines import pac_ostia
 
 
 def test_fetch_accuray():
-    print(pac_ostia.fetch_accuracy(language='bengali', quality='low'))
+    languages = ['english', 'polish', 'bengali']
+    qualities = ['low', 'medium', 'high']
+    accuracies = []
+
+    for language in languages:
+        for quality in qualities:
+            accuracies.append((language, quality, pac_ostia.fetch_accuracy(language=language, quality=quality)))
+    print(accuracies)
+    return True
