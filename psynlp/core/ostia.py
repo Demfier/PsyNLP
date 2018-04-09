@@ -19,8 +19,12 @@ class OSTIA(object):
 
     def __init__(self, T):
         """
-        Initializes an FST from the given input and output tapes, and implements OSTIA
-        :param T: An input*output mapping
+        Applies Onward Subsequential Transducer Inference Algorithm
+        Initializes a graph with merged states.
+        Parameters:
+        -----------------------------------
+        object_name : T
+            A set of input, metadata and output pairs.
         """
 
         if isinstance(T[0], tuple):
