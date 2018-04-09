@@ -367,9 +367,9 @@ class FCA(nx.Graph):
             consequent_attrs = set(consequent_attrs)
             attribute_names = set(attribute_names)
 
-        if attribute_names.intersection(antecedent_attrs) != antecedent_attrs and not is_member(
-                implications, attribute_names.intersection(antecedent_attrs), self.attributes_superset):
-            return((tuple(sorted(antecedent_attrs)), tuple(sorted(consequent_attrs))))
+            if attribute_names.intersection(antecedent_attrs) != antecedent_attrs and not is_member(
+                    implications, attribute_names.intersection(antecedent_attrs), self.attributes_superset):
+                return((tuple(sorted(antecedent_attrs)), tuple(sorted(consequent_attrs))))
 
     def clean_hypothesis(self, H):
         all_shared_objects = set()
@@ -388,7 +388,10 @@ class FCA(nx.Graph):
     def horn1(self, is_member, is_equivalent):
         H = set()
 
-        C, self.nqueries, self.pn_ratio = is_equivalent(H)
+        C, self.nqueries, self.pn_ratio = is_equivalent(H, self.nqueries,
+                                                        oracle.li_times,
+                                                        self.pn_ratio,
+                                                        self.max_pn_ratio)
         while C is not True:
             # if some A->B belonging to H does not respect C: not(A doesnt
             # belong to C or B belongs to C)
@@ -427,27 +430,31 @@ class FCA(nx.Graph):
                             sorted(antecedent_attrs)), tuple(
                             sorted(consequent_attrs))))
 
-                C, self.nqueries, self.pn_ratio = is_equivalent(H)
-                # wait_till_user_responds = input("Press enter to go through
-                # next loop")
-                j = 0
-                for (antecedent_attrs, consequent_attrs) in H:
-                    j += 1
-                    print("PAC Implication",
-                          j,
-                          ":",
-                          len(antecedent_attrs),
-                          "attributes:",
-                          " ->",
-                          len(consequent_attrs),
-                          "attributes with",
-                          len(self.attributes_extent(set(consequent_attrs))),
-                          "objects:",
-                          self.attributes_extent(set(consequent_attrs)))
+            C, self.nqueries, self.pn_ratio = is_equivalent(H,
+                                                            self.nqueries,
+                                                            oracle.li_times,
+                                                            self.pn_ratio,
+                                                            self.max_pn_ratio)
+            # wait_till_user_responds = input("Press enter to go through
+            # next loop")
+            j = 0
+            for (antecedent_attrs, consequent_attrs) in H:
+                j += 1
+                print("PAC Implication",
+                      j,
+                      ":",
+                      len(antecedent_attrs),
+                      "attributes:",
+                      " ->",
+                      len(consequent_attrs),
+                      "attributes with",
+                      len(self.attributes_extent(set(consequent_attrs))),
+                      "objects:",
+                      self.attributes_extent(set(consequent_attrs)))
 
         H = self.clean_hypothesis(H)
         return(H)
 
     def pac_basis(self, is_member, epsilon=0.8, delta=0.5):
-        return(self.horn1(is_member, oracle.is_approx_equivalent(is_member, self.attibutes(), self.nqueries, self.attributes_extent, self.attributes_superset, self.is_model_of_implications, self.pn_ratio, self.max_pn_ratio, epsilon, delta)))
+        return(self.horn1(is_member, oracle.is_approx_equivalent(is_member, self.attributes(), self.nqueries, self.attributes_extent, self.attributes_superset, self.is_model_of_implications, self.pn_ratio, self.max_pn_ratio, epsilon, delta)))
 

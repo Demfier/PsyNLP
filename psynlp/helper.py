@@ -6,10 +6,12 @@ import os
 import re
 import time
 import operator
-import networkx as nx
-import matplotlib.pyplot as plt
-from ..psynlp.fca import FCA
 import pandas as pd
+import networkx as nx
+from ..psynlp import oracle
+from ..psynlp.fca import FCA
+import matplotlib.pyplot as plt
+
 
 def align(lemma, form):
     alemma, aform, _ = levenshtein(lemma, form)
@@ -218,7 +220,7 @@ def parse_metadata_fca(metadata_words, cluster_type='pac'):
         if len(concept.objects()) > 0:
             start1 = time.clock()
             if cluster_type == 'pac':
-                pac = concept.pac_basis(concept.is_member, 0.1, 0.1)
+                pac = concept.pac_basis(oracle.is_member, 0.3, 0.4)
             else:
                 pac = deterministic_pac(concept)
             end1 = time.clock() - start1
