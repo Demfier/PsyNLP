@@ -1,4 +1,3 @@
-re
 pandas
 pytest
 autopep8
