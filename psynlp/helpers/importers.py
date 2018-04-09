@@ -29,7 +29,7 @@ def fetch_testing_data(language='english'):
         if "*" not in source and "*" not in expected_dest:
             metadata = metadata.strip("\n")
             T.append((source, metadata, expected_dest))
-    print("Providing all test words in structured manner")
+    verbose_print_1("Providing all test words in structured manner")
     T = sorted(T, key=operator.itemgetter(0))
     return T
 
@@ -120,7 +120,7 @@ def fetch_input_output_pairs(language='english', quality='low'):
         if "*" not in source and "*" not in dest:
             metadata = metadata.strip("\n").split(";")
             T.append((source, metadata, dest))
-    print("Providing all words in structured manner, to OSTIA")
+    verbose_print_1("Providing all words in structured manner, to OSTIA")
     T = sorted(T, key=operator.itemgetter(0))
     return T
 

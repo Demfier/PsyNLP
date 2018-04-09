@@ -22,7 +22,7 @@ def fetch_accuracy(language='english', quality='high'):
             total += 1
             continue
         if predicted_dest == expected_dest:
-            print("{} + {}: expected and received {}".format(source,
+            verbose_print_1("{} + {}: expected and received {}".format(source,
                                                              metadatas, predicted_dest))
             correct += 1
         else:
@@ -31,9 +31,9 @@ def fetch_accuracy(language='english', quality='high'):
                 levenshteinDist[dist] += 1
             else:
                 levenshteinDist[dist] = 1
-            print("{} + {}: expected {}, but received {}".format(source,
+            verbose_print_1("{} + {}: expected {}, but received {}".format(source,
                                                                  metadatas, expected_dest, predicted_dest))
         total += 1
     accuracy = 100.00*float(correct)/float(total)
-    print("\n\nExact word-match accuracy: {}".format(accuracy))
+    print("\n\nExact word-match accuracy for {}-{}: {}".format(language, quality, accuracy))
     return accuracy

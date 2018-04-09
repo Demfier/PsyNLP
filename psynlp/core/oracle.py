@@ -142,7 +142,7 @@ def is_approx_equivalent(is_member, M, nqueries, attributes_extent,
                                                     attributes_superset,
                                                     nqueries, pn_ratio))
         else:
-            print("Giving negative counter-example")
+            verbose_print_3("Giving negative counter-example")
             pn_ratio = 0
             H = hypothesis
 
@@ -154,7 +154,7 @@ def is_approx_equivalent(is_member, M, nqueries, attributes_extent,
                         if len(attributes_extent(antecedent_superset)) != 0:
                             return(antecedent_superset, nqueries, pn_ratio)
 
-                print("Redirecting to usual positive counter-example")
+                verbose_print_3("Redirecting to usual positive counter-example")
                 return(generate_positive_counterexample(H, M, li_times,
                                                         is_member, is_model,
                                                         attributes_superset,

@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def pretty_print_graph(G):
+def pretty_verbose_print_graph(G):
     """
     Method to pretty print a graph
     Parameters:
@@ -9,9 +9,9 @@ def pretty_print_graph(G):
     G : nx.Graph
         The networkx graph to be pretty-printed
     """
-    print("\n")
-    print("Number of nodes : ", len(G.nodes))
-    print("Number of edges : ", len(G.edges))
+    verbose_print_2("\n")
+    verbose_print_2("Number of nodes : ", len(G.nodes))
+    verbose_print_2("Number of edges : ", len(G.edges))
 
 
 def deterministic_pac(concept):

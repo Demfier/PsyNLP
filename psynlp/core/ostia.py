@@ -112,7 +112,6 @@ class OSTIA(object):
             try:
                 input = graph[from_state][b]['input']
                 output = graph[from_state][b]['output']
-                # print(input, output)
                 graph.add_edge(from_state, a, input=input, output=output)
             except KeyError:
                 graph.add_edge(from_state, a)
@@ -120,7 +119,6 @@ class OSTIA(object):
         for to_state in graph[b]:
             input = graph[b][to_state]['input']
             output = graph[b][to_state]['output']
-            # print(input, output)
             graph.add_edge(a, to_state, input=input, output=output)
 
         graph.remove_node(b)
@@ -229,7 +227,7 @@ class OSTIA(object):
         for (from_state, input_chunk, output_chunk) in output_arcs:
             graph.add_arc(from_state, input_chunk, output_chunk, -1)
 
-        # print("Done forming the directed FST graph")
+        verbose_print_2("Done forming the directed FST graph")
         return(graph)
 
     def form_input_digraph(self, T):
@@ -270,7 +268,7 @@ class OSTIA(object):
         for (from_state, input_chunk, output_chunk) in output_arcs:
             graph.add_arc(from_state, input_chunk, input_chunk, -1)
 
-        # print("Done forming the directed FST graph")
+        verbose_print_2("Done forming the directed FST graph")
         return(graph)
 
     def word_from_path(self, graph, path):

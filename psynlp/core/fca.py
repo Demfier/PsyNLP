@@ -267,19 +267,16 @@ class FCA(nx.Graph):
         return(self.edges)
 
     def pretty_print(self):
-        """
-        Custom function to pretty print the lattice
-        """
-        print("\n------------------------------------------------")
-        print("Brief overview of this concept")
-        print("------------------------------------------------")
+        verbose_print_3("\n------------------------------------------------")
+        verbose_print_3("Brief overview of this concept")
+        verbose_print_3("------------------------------------------------")
         for object_name in self.objects():
-            print("Object " + str(object_name) + " : " +
+            verbose_print_3("Object " + str(object_name) + " : " +
                   str(self.attributes(object_name)))
-        print("Number of objects : ", len(self.objects()))
-        print("Number of attributes : ", len(self.attributes()))
-        print("Number of relations : ", len(self.relations()))
-        print("------------------------------------------------")
+        verbose_print_3("Number of objects : ", len(self.objects()))
+        verbose_print_3("Number of attributes : ", len(self.attributes()))
+        verbose_print_3("Number of relations : ", len(self.relations()))
+        verbose_print_3("------------------------------------------------")
 
     def implications(self, attribute_names=None):
         """
@@ -572,25 +569,22 @@ class FCA(nx.Graph):
             disrespectful_implications = self.implications_not_respecting_attributes(
                 C, H)
             if len(disrespectful_implications) is not 0:
-                print("Negative counter-example")
-                print("Block 1")
+                verbose_print_3("Present in Block-1 of Horn1")
                 # replace all such implications A->B by A->BnC
                 H = self.replace_disrespectful_implications(
                     H, disrespectful_implications, C)
             else:
-                print("Positive counter-example")
-
                 # find first A->B belonging to H such that CnA not equal to A
                 # and not is_member(H, CnA)
                 such_implication = self.find_not_members(H, C, is_member)
                 # if such A->B doesnt exist:
                 if such_implication is None:
                     # add C->M to H
-                    print("Block 3")
+                    verbose_print_3("Present in Block-3 of Horn1")
                     H.add((tuple(sorted(C)), tuple(self.attributes())))
                 else:
                     # replace A->B by CnA -> BU(A-C)
-                    print("Block 2")
+                    verbose_print_3("Present in Block-2 of Horn1")
                     C = set(C)
                     H.discard(such_implication)
                     antecedent_attrs, consequent_attrs = such_implication
@@ -614,7 +608,7 @@ class FCA(nx.Graph):
             j = 0
             for (antecedent_attrs, consequent_attrs) in H:
                 j += 1
-                print("PAC Implication",
+                verbose_print_3("PAC Implication",
                       j,
                       ":",
                       len(antecedent_attrs),
