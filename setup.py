@@ -9,7 +9,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='psynlp',
-    version='1.0.2',
+    version='1.0.3',
     description='A python module with Program Synthesis techniques for NLP',
     long_description=long_description,
     url='https://github.com/demfier/psynlp',
