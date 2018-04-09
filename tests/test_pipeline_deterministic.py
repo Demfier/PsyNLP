@@ -1,5 +1,5 @@
 import pytest
-from ..psynlp import inflection_deterministic
+from ..psynlp.pipelines import deterministic
 
 
 def test_fetch_accuracy():
@@ -9,6 +9,6 @@ def test_fetch_accuracy():
 
     for language in languages:
         for quality in qualities:
-            accuracies.append((language, quality, inflection_deterministic.fetch_accuracy(language=language, quality=quality)))
+            accuracies.append((language, quality, deterministic.fetch_accuracy(language=language, quality=quality)))
     print(accuracies)
     return True

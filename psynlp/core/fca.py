@@ -8,19 +8,20 @@ For theory refer:
 > "Conceptual Exploration", Bernhard Ganter & Sergei Obiedkov
     - https://link.springer.com/content/pdf/10.1007%2F978-3-662-49291-8.pdf
 """
-from ..psynlp import oracle
-from ..psynlp.helper import *
 import itertools
 import networkx as nx
+from ..core import oracle
 
 
 class FCA(nx.Graph):
     """
+    Class to represent methods in Formal Concept Analysis.
+
     A formal concept (K) has the following properties:
 
     Attributes:
-    objects (G)    : A set of objects
-    attributes (M) : A set of attributes
+    objects (G)    : A set of objects (operation sequences for our case)
+    attributes (M) : A set of attributes (source words for our case)
     relations (I)  : A set of relations between objects (G) & attributes (M)
     """
 
@@ -29,6 +30,13 @@ class FCA(nx.Graph):
     max_pn_ratio = 2
 
     def add_object(self, object_name):
+        """
+        Adds a new object to the concept.
+        Parameters:
+        -----------------------------------
+        object_name : str
+            Name of the object to be added to the concept
+        """
         self.add_node(object_name, type='object')
 
     def add_objects(self, object_names):

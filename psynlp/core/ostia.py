@@ -9,8 +9,9 @@ For theory, refer:
 """
 
 import networkx as nx
-from ..psynlp.fst import FST
-from ..psynlp.helper import init_concept_from_wordpairs, is_prefixed_with, eliminate_prefix, eliminate_suffix, lcp, get_io_chunks, align, levenshtein
+from ..core.fst import FST
+from ..helpers.importers import init_concept_from_wordpairs
+from ..helpers.text import is_prefixed_with, eliminate_prefix, eliminate_suffix, lcp, get_io_chunks, align, levenshtein
 
 
 class OSTIA(object):

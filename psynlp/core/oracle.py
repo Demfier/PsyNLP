@@ -39,7 +39,8 @@ def generate_positive_counterexample(H, M, li_times, is_member, is_model,
 
 
 def is_approx_equivalent(is_member, M, nqueries, attributes_extent,
-                         attributes_superset, is_model, pn_ratio, max_pn_ratio, epsilon=0.5, delta=0.5):
+                         attributes_superset, is_model, pn_ratio, max_pn_ratio,
+                         epsilon=0.5, delta=0.5):
 
     def query_oracle(hypothesis, nqueries, li_times, pn_ratio, max_pn_ratio):
         nqueries += 1
@@ -47,7 +48,10 @@ def is_approx_equivalent(is_member, M, nqueries, attributes_extent,
 
         if pn_ratio < max_pn_ratio:
             pn_ratio += 1
-            return(generate_positive_counterexample(hypothesis, M, li_times, is_member, is_model, attributes_superset, nqueries, pn_ratio))
+            return(generate_positive_counterexample(hypothesis, M, li_times,
+                                                    is_member, is_model,
+                                                    attributes_superset,
+                                                    nqueries, pn_ratio))
         else:
             print("Giving negative counter-example")
             pn_ratio = 0
@@ -62,7 +66,10 @@ def is_approx_equivalent(is_member, M, nqueries, attributes_extent,
                             return(antecedent_superset, nqueries, pn_ratio)
 
                 print("Redirecting to usual positive counter-example")
-                return(generate_positive_counterexample(H, M, li_times, is_member, is_model, attributes_superset, nqueries, pn_ratio))
+                return(generate_positive_counterexample(H, M, li_times,
+                                                        is_member, is_model,
+                                                        attributes_superset,
+                                                        nqueries, pn_ratio))
     return(query_oracle)
 
 

@@ -3,8 +3,9 @@ Pipelines for SIGMORPHON-2017 task of Universal Morphological Inflection.
 """
 
 import operator
-from ..psynlp.ostia import OSTIA
-from ..psynlp.helper import parse_metadata_fca, parse_metadata_words, fetch_testing_data, inflect
+from ..core.ostia import OSTIA
+from ..helpers.importers import parse_metadata_fca, parse_metadata_words, fetch_testing_data
+from ..helpers.text import inflect
 
 
 def fetch_accuracy(language='english', quality='high'):
@@ -16,9 +17,15 @@ def fetch_accuracy(language='english', quality='high'):
     for (source, metadata, expected_dest) in testing_data:
         scores = []
         if metadata not in pac:
+            if source == expected_dest:
+                correct += 1
+            total += 1
             continue
         concept, cluster, _ = pac[metadata]
         if not cluster:
+            if source == expected_dest:
+                correct += 1
+            total += 1
             continue
         for (antecedent_attrs, consequent_attrs) in cluster:
             print(len(consequent_attrs))

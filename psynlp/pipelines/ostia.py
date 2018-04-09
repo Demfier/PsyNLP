@@ -2,8 +2,9 @@
 Pipelines for SIGMORPHON-2017 task of Universal Morphological Inflection.
 """
 
-from ..psynlp.ostia import OSTIA
-from ..psynlp.helper import fetch_input_output_pairs, fetch_testing_data, levenshtein
+from ..core.ostia import OSTIA
+from ..helpers.importers import fetch_input_output_pairs, fetch_testing_data
+from ..helpers.text import levenshtein
 
 
 def fetch_accuracy(language='english', quality='high'):
@@ -28,7 +29,6 @@ def fetch_accuracy(language='english', quality='high'):
                 levenshteinDist[dist] = 1
             print("{} + {}: expected {}, but received {}".format(source,
                                                                  metadatas, expected_dest, predicted_dest))
-        # print("Prediction given by most fitting path of word: {}".format(closest_word))
         total += 1
     accuracy = 100.00*float(correct)/float(total)
     print("\n\nExact word-match accuracy: {}".format(accuracy))
