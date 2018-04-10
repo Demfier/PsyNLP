@@ -10,4 +10,3 @@ install:
   - pip install autopep8
   - pip install networkx
   - pip install argparse
-  - pip install importlib
