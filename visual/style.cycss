@@ -1,0 +1,127 @@
+core {
+	active-bg-color: #fff;
+	active-bg-opacity: 0.333;
+}
+
+edge {
+	curve-style: haystack;
+	haystack-radius: 0;
+	opacity: 0.333;
+	width: 2;
+	z-index: 0;
+	overlay-opacity: 0;
+  events: no;
+}
+
+node {
+	width: 40;
+	height: 40;
+	font-size: 10;
+	font-weight: bold;
+	min-zoomed-font-size: 4;
+	content: data(name);
+	text-valign: center;
+	text-halign: center;
+	color: #000;
+	text-outline-width: 2;
+	text-outline-color: #fff;
+	text-outline-opacity: 1;
+	overlay-color: #fff;
+}
+
+edge[interaction = "ao"] {
+	line-color: #FACD37;
+	opacity: 0.666;
+	z-index: 9;
+	width: 4;
+}
+
+node[NodeType = "attribute"],
+node[NodeType = "IntentNode"] {
+	background-color: #FACD37;
+	text-outline-color: #FACD37;
+	width: mapData(Quality, 70, 100, 20, 50);
+	height: mapData(Quality, 70, 100, 20, 50);
+}
+
+node[NodeType = "WhiteWine"] {
+	background-color: white;
+	text-outline-color: white;
+}
+
+node[NodeType = "ExtentNode"],
+node[NodeType = "object"] {
+	background-color: #DE3128;
+	text-outline-color: #DE3128;
+}
+
+edge[interaction = "ii"] {
+	line-color: #39FF14;
+}
+
+edge[interaction = "ee"] {
+	line-color: #FFA500;
+}
+
+edge[interaction = "eo"] {
+	line-color: #08E8DE;
+}
+
+edge[interaction = "ae"],
+edge[interaction = "ao"],
+edge[interaction = "io"],
+edge[interaction = "ie"] {
+	line-color: #ffdead;
+}
+
+edge[interaction = "ia"] {
+	line-color: #228B22;
+}
+
+node[NodeType = "Cider"] {
+	background-color: #A4EB34;
+	text-outline-color: #A4EB34;
+}
+
+node.highlighted {
+	min-zoomed-font-size: 0;
+  z-index: 9999;
+}
+
+edge.highlighted {
+	opacity: 0.8;
+	width: 4;
+	z-index: 9999;
+}
+
+.faded {
+  events: no;
+}
+
+node.faded {
+  opacity: 0.08;
+}
+
+edge.faded {
+  opacity: 0.06;
+}
+
+.hidden {
+	display: none;
+}
+
+.highlighted {
+
+}
+
+node:selected {
+	width: 40;
+	height: 40;
+	border-color: rgb(187, 219, 247);
+	border-opacity: 0.5;
+	border-width: 10;
+}
+
+.filtered {
+	display: none;
+}

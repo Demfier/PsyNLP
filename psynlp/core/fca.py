@@ -677,12 +677,13 @@ class FCA(nx.Graph):
         nodes = []
         edges = []
 
+        objIDmap = {}
         attrIDmap = {}
         # Add nodes to the json
         o_top = 100  # top postion for objects
         a_top = 100  # top position for attributes
         node_id = 0
-        edge_id = 0
+        # node_id = 0
         for (node_name, data) in self.nodes(data=True):
             node = {}
             data_type = data["type"]
@@ -699,6 +700,7 @@ class FCA(nx.Graph):
             if data_type == 'object':
                 node["position"] = {"x": -500, "y": o_top}
                 o_top += 50
+                objIDmap[node_name] = node_id
             else:
                 node["position"] = {"x": 500, "y": a_top}
                 a_top += 50
@@ -717,72 +719,289 @@ class FCA(nx.Graph):
                 attr_id = attrIDmap[attr]
                 edge = {}
                 edge["data"] = {}
-                edge["data"]["id"] = str(edge_id)
+                edge["data"]["id"] = str(node_id)
                 edge["data"]["source"] = str(attr_id)
                 edge["data"]["target"] = str(obj_id)
                 edge["data"]["selected"] = False
-                edge["data"]["canonicalName"] = "attribute {} (ao) object {}".format(attr, obj_name)
-                edge["data"]["SUID"] = edge_id
-                edge["data"]["name"] = "attribute {} (ao) object {}".format(attr, obj_name)
+                edge["data"]["canonicalName"] = "{} (ao) {}".format(attr, obj_name)
+                edge["data"]["SUID"] = node_id
+                edge["data"]["name"] = "{} (ao) {}".format(attr, obj_name)
                 edge["data"]["interaction"] = "ao"
                 edge["data"]["share_interaction"] = "ao"
-                edge["data"]["shared_name"] = "attribute {} (ao) object {}".format(attr, obj_name)
+                edge["data"]["shared_name"] = "{} (ao) {}".format(attr, obj_name)
                 edge["selected"] = False
-                edge_id += 1
+                node_id += 1
                 edges.append(edge)
 
         concepts = self.enumerateConcepts()
+        extents = set()
+        intents = set()
         for concept in concepts.values():
-            i_node = {}  # intent node
-            e_node = {}  # extent node
-            i_node["data"], e_node["data"] = {}, {}
+            extent = concept['extent']
+            if len(extent) > 1:
+                extents.add(frozenset(extent))
+            intent = concept['intent']
+            if len(intent) > 1:
+                intents.add(frozenset(intent))
 
-            i_node["data"]["id"] = str(node_id)
-            i_node["data"]["SUID"] = node_id
-            node_id += 1
-            e_node["data"]["id"] = str(node_id)
-            e_node["data"]["SUID"] = node_id
-            node_id += 1
+        for concept in concepts.values():
+            intent = concept['intent']
+            extent = concept['extent']
+            if len(intent) > 1 and len(extent) > 1:
+                i_node = {}  # intent node
+                i_node["data"] = {}
+                i_node["data"]["id"] = str(node_id)
+                i_node["data"]["SUID"] = node_id
+                attrIDmap[", ".join(sorted(intent))] = node_id
+                node_id += 1
+                i_node["data"]["selected"] = False
+                i_node["data"]["cytoscape_alias_list"] = list(concept["intent"])
+                i_node["data"]["canonicalName"] = "{} attributes".format(len(concept["intent"]))
+                i_node["data"]["Type"] = "Intent"
+                i_node["data"]["NodeType"] = "IntentNode"
+                i_node["data"]["name"] = "{} attributes".format(len(concept["intent"]))
+                i_node["data"]["shared_name"] = "{} attributes".format(len(concept["intent"]))
+                i_node["position"] = {"x": 500, "y": a_top}
+                a_top += 50
+                i_node["selected"] = False
+                nodes.append(i_node)
 
-            i_node["data"]["selected"], e_node["data"]["selected"] = False, False
-            i_node["data"]["cytoscape_alias_list"] = list(concept["intent"])
-            e_node["data"]["cytoscape_alias_list"] = list(concept["extent"])
-            i_node["data"]["canonicalName"] = ", ".join(list(concept["intent"]))
-            e_node["data"]["canonicalName"] = ", ".join(list(concept["extent"]))
-            i_node["data"]["Type"] = "Intent"
-            e_node["data"]["Type"] = "Extent"
-            i_node["data"]["NodeType"] = "IntentNode"
-            e_node["data"]["NodeType"] = "ExtentNode"
-            i_node["data"]["name"] = ", ".join(list(concept["intent"]))
-            i_node["data"]["shared_name"] = ", ".join(list(concept["intent"]))
-            e_node["data"]["name"] = ", ".join(list(concept["extent"]))
-            e_node["data"]["shared_name"] = ", ".join(list(concept["extent"]))
+                e_node = {}  # extent node
+                e_node["data"] = {}
+                e_node["data"]["id"] = str(node_id)
+                e_node["data"]["SUID"] = node_id
+                e_node["data"]["cytoscape_alias_list"] = list(concept["extent"])
+                e_node["data"]["canonicalName"] = "{} attributes".format(len(concept["extent"]))
+                e_node["data"]["Type"] = "Extent"
+                e_node["data"]["NodeType"] = "ExtentNode"
+                e_node["data"]["name"] = "{} attributes".format(len(concept["extent"]))
+                e_node["data"]["shared_name"] = "{} attributes".format(len(concept["extent"]))
+                e_node["position"] = {"x": -500, "y": o_top}
+                o_top += 50
+                objIDmap[", ".join(sorted(extent))] = node_id
+                node_id += 1
+                e_node["selected"] = False
+                nodes.append(e_node)
 
-            e_node["position"] = {"x": -500, "y": o_top}
-            i_node["position"] = {"x": 500, "y": a_top}
+                # Add an edge from i_node to e_node
+                edge = {}
+                edge["data"] = {}
+                edge["data"]["id"] = str(node_id)
+                i_id = i_node["data"]["id"]
+                e_id = e_node["data"]["id"]
+                edge["data"]["source"] = i_id
+                edge["data"]["target"] = e_id
+                edge["data"]["selected"] = False
+                edge["data"]["canonicalName"] = "intent {} (ie) extent {}".format(i_id, e_id)
+                edge["data"]["SUID"] = node_id
+                edge["data"]["name"] = "intent {} (ie) extent {}".format(i_id, e_id)
+                edge["data"]["interaction"] = "ie"
+                edge["data"]["shared_interaction"] = "ie"
+                edge["data"]["name"] = "intent {} (ie) extent {}".format(i_id, e_id)
+                edge["selected"] = False
+                node_id += 1
+                edges.append(edge)
 
-            i_node["selected"], e_node["selected"] = False, False
-            nodes.append(i_node)
-            nodes.append(e_node)
+                # Add extent to obj edge
+                for obj in extent:
+                    obj_id = objIDmap[obj]
+                    edge = {}
+                    edge["data"] = {}
+                    edge["data"]["id"] = str(node_id)
+                    edge["data"]["source"] = e_id
+                    edge["data"]["target"] = obj_id
+                    edge["data"]["selected"] = False
+                    edge["data"]["canonicalName"] = "extent {} (eo) {}".format(e_id, obj)
+                    edge["data"]["SUID"] = node_id
+                    edge["data"]["name"] = "extent {} (eo) {}".format(e_id, obj)
+                    edge["data"]["interaction"] = "eo"
+                    edge["data"]["shared_interaction"] = "eo"
+                    edge["data"]["name"] = "extent {} (eo) {}".format(e_id, obj)
+                    edge["selected"] = False
+                    node_id += 1
+                    edges.append(edge)
 
-            # Add an edge from i_node to e_node
-            edge = {}
-            edge["data"] = {}
-            edge["data"]["id"] = str(edge_id)
-            i_id = i_node["data"]["id"]
-            e_id = e_node["data"]["id"]
-            edge["data"]["source"] = e_id
-            edge["data"]["target"] = i_id
-            edge["data"]["selected"] = False
-            edge["data"]["canonicalName"] = "extent {} (ie) intent {}".format(e_id, i_id)
-            edge["data"]["SUID"] = edge_id
-            edge["data"]["name"] = "intent {} (ie) extent {}".format(i_id, e_id)
-            edge["data"]["interaction"] = "ie"
-            edge["data"]["shared_interaction"] = "ie"
-            edge["data"]["name"] = "intent {} (ie) extent {}".format(i_id, e_id)
-            edge["selected"] = False
-            edge_id += 1
-            edges.append(edge)
+                # Add intent to attr edge
+                for attr in intent:
+                    attr_id = attrIDmap[attr]
+                    edge = {}
+                    edge["data"] = {}
+                    edge["data"]["id"] = str(node_id)
+                    edge["data"]["source"] = i_id
+                    edge["data"]["target"] = attr_id
+                    edge["data"]["selected"] = False
+                    edge["data"]["canonicalName"] = "intent {} (ia) {}".format(i_id, attr)
+                    edge["data"]["SUID"] = node_id
+                    edge["data"]["name"] = "intent {} (ia) {}".format(i_id, attr)
+                    edge["data"]["interaction"] = "ia"
+                    edge["data"]["shared_interaction"] = "ia"
+                    edge["data"]["name"] = "intent {} (ia) {}".format(i_id, attr)
+                    edge["selected"] = False
+                    node_id += 1
+                    edges.append(edge)
+            elif len(extent) == 1 and len(intent) > 1:
+                i_node = {}  # intent node
+                i_node["data"] = {}
+                i_node["data"]["id"] = str(node_id)
+                i_node["data"]["SUID"] = node_id
+                attrIDmap[", ".join(sorted(intent))] = node_id
+                node_id += 1
+                i_node["data"]["selected"] = False
+                i_node["data"]["cytoscape_alias_list"] = list(concept["intent"])
+                i_node["data"]["canonicalName"] = "{} attributes".format(len(concept["intent"]))
+                i_node["data"]["Type"] = "Intent"
+                i_node["data"]["NodeType"] = "IntentNode"
+                i_node["data"]["name"] = "{} attributes".format(len(concept["intent"]))
+                i_node["data"]["shared_name"] = "{} attributes".format(len(concept["intent"]))
+                i_node["position"] = {"x": 500, "y": a_top}
+                a_top += 50
+                i_node["selected"] = False
+                nodes.append(i_node)
+
+                obj = list(extent)[0]
+                obj_id = objIDmap[obj]
+                # Add an edge from i_node to obj
+                edge = {}
+                edge["data"] = {}
+                edge["data"]["id"] = str(node_id)
+                i_id = i_node["data"]["id"]
+                edge["data"]["source"] = i_id
+                edge["data"]["target"] = obj_id
+                edge["data"]["selected"] = False
+                edge["data"]["canonicalName"] = "intent {} (io) {}".format(i_id, obj)
+                edge["data"]["SUID"] = node_id
+                edge["data"]["name"] = "intent {} (io) {}".format(i_id, obj)
+                edge["data"]["interaction"] = "io"
+                edge["data"]["shared_interaction"] = "io"
+                edge["data"]["name"] = "intent {} (io) {}".format(i_id, obj)
+                edge["selected"] = False
+                node_id += 1
+                edges.append(edge)
+
+                # Add intent to attr edge
+                for attr in intent:
+                    attr_id = attrIDmap[attr]
+                    edge = {}
+                    edge["data"] = {}
+                    edge["data"]["id"] = str(node_id)
+                    edge["data"]["source"] = i_id
+                    edge["data"]["target"] = attr_id
+                    edge["data"]["selected"] = False
+                    edge["data"]["canonicalName"] = "intent {} (ia) {}".format(i_id, attr)
+                    edge["data"]["SUID"] = node_id
+                    edge["data"]["name"] = "intent {} (ia) {}".format(i_id, attr)
+                    edge["data"]["interaction"] = "ia"
+                    edge["data"]["shared_interaction"] = "ia"
+                    edge["data"]["name"] = "intent {} (ia) {}".format(i_id, attr)
+                    edge["selected"] = False
+                    node_id += 1
+                    edges.append(edge)
+
+            elif len(intent) == 1 and len(extent) > 1:
+                e_node = {}  # extent node
+                e_node["data"] = {}
+                e_node["data"]["id"] = str(node_id)
+                e_node["data"]["SUID"] = node_id
+                e_node["data"]["cytoscape_alias_list"] = list(concept["extent"])
+                e_node["data"]["canonicalName"] = "{} attributes".format(len(concept["extent"]))
+                e_node["data"]["Type"] = "Extent"
+                e_node["data"]["NodeType"] = "ExtentNode"
+                e_node["data"]["name"] = "{} attributes".format(len(concept["extent"]))
+                e_node["data"]["shared_name"] = "{} attributes".format(len(concept["extent"]))
+                e_node["position"] = {"x": -500, "y": o_top}
+                o_top += 50
+                objIDmap[", ".join(sorted(extent))] = node_id
+                node_id += 1
+                e_node["selected"] = False
+                nodes.append(e_node)
+
+                attr = list(intent)[0]
+                attr_id = attrIDmap[attr]
+
+                # Add an edge from attr to e_node
+                edge = {}
+                e_id = e_node["data"]["id"]
+                edge["data"] = {}
+                edge["data"]["id"] = str(node_id)
+                edge["data"]["source"] = attr_id
+                edge["data"]["target"] = e_id
+                edge["data"]["selected"] = False
+                edge["data"]["canonicalName"] = "{} (ae) extent {}".format(attr, e_id)
+                edge["data"]["SUID"] = node_id
+                edge["data"]["name"] = "{} (ae) extent {}".format(attr, e_id)
+                edge["data"]["interaction"] = "ae"
+                edge["data"]["shared_interaction"] = "ae"
+                edge["data"]["name"] = "{} (ae) extent {}".format(attr, e_id)
+                edge["selected"] = False
+                node_id += 1
+                edges.append(edge)
+
+                # Add extent to obj edge
+                for obj in extent:
+                    obj_id = objIDmap[obj]
+                    edge = {}
+                    edge["data"] = {}
+                    edge["data"]["id"] = str(node_id)
+                    edge["data"]["source"] = e_id
+                    edge["data"]["target"] = obj_id
+                    edge["data"]["selected"] = False
+                    edge["data"]["canonicalName"] = "extent {} (eo) {}".format(e_id, obj)
+                    edge["data"]["SUID"] = node_id
+                    edge["data"]["name"] = "extent {} (eo) {}".format(e_id, obj)
+                    edge["data"]["interaction"] = "eo"
+                    edge["data"]["shared_interaction"] = "eo"
+                    edge["data"]["name"] = "extent {} (eo) {}".format(e_id, obj)
+                    edge["selected"] = False
+                    node_id += 1
+                    edges.append(edge)
+
+        for concept in concepts.values():
+            # Add extent to extent edges
+            extent = set(concept['extent'])
+            e_id = objIDmap[", ".join(sorted(extent))]
+
+            for curr_ex in extents:
+                curr_extent = set(curr_ex)
+                if curr_extent != extent and curr_extent.issubset(extent):
+                    curr_id = objIDmap[", ".join(sorted(curr_extent))]
+                    edge = {}
+                    edge["data"] = {}
+                    edge["data"]["id"] = str(node_id)
+                    edge["data"]["source"] = e_id
+                    edge["data"]["target"] = curr_id
+                    edge["data"]["selected"] = False
+                    edge["data"]["canonicalName"] = "extent {} (ee) extent {}".format(e_id, curr_id)
+                    edge["data"]["SUID"] = node_id
+                    edge["data"]["name"] = "extent {} (ee) extent {}".format(e_id, curr_id)
+                    edge["data"]["interaction"] = "ee"
+                    edge["data"]["shared_interaction"] = "ee"
+                    edge["data"]["name"] = "extent {} (ee) extent {}".format(e_id, curr_id)
+                    edge["selected"] = False
+                    node_id += 1
+                    edges.append(edge)
+
+            # Add intent to intent edge
+            intent = set(concept['intent'])
+            i_id = attrIDmap[", ".join(sorted(intent))]
+            for curr_int in intents:
+                curr_intent = set(curr_int)
+                if curr_intent != intent and curr_intent.issubset(intent):
+                    curr_id = attrIDmap[", ".join(sorted(curr_intent))]
+                    edge = {}
+                    edge["data"] = {}
+                    edge["data"]["id"] = str(node_id)
+                    edge["data"]["source"] = i_id
+                    edge["data"]["target"] = curr_id
+                    edge["data"]["selected"] = False
+                    edge["data"]["canonicalName"] = "intent {} (ii) intent {}".format(i_id, curr_id)
+                    edge["data"]["SUID"] = node_id
+                    edge["data"]["name"] = "intent {} (ii) intent {}".format(i_id, curr_id)
+                    edge["data"]["interaction"] = "ii"
+                    edge["data"]["shared_interaction"] = "ii"
+                    edge["data"]["name"] = "intent {} (ii) intent {}".format(i_id, curr_id)
+                    edge["selected"] = False
+                    node_id += 1
+                    edges.append(edge)
 
         conceptLatticeJson["elements"] = {"nodes": nodes, "edges": edges}
         with open('visual/sample.json', 'w') as jout:
