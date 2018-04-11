@@ -9,7 +9,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='psynlp',
-    version='1.0.3',
+    version='1.0.4',
     description='A python module with Program Synthesis techniques for NLP',
     long_description=long_description,
     url='https://github.com/demfier/psynlp',
@@ -23,8 +23,7 @@ setup(
     install_requires=[
         'pandas',
         'networkx',
-        'argparse',
-        'importlib'],
+        'argparse'],
 
     keywords='nlp transducer program-synthesis oracle-learning ostia concept-lattice regex-learning pac-basis concept-learning'
     )

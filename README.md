@@ -43,11 +43,15 @@ $ cd PsyNLP
 $ pip3 install -r requirements.txt
 ```
 
+Alternatively, you can also install the module from pip directly using the command:
+
+`pip3 install psynlp`
+
 ### Usage
 
 [(Back to ToC)](#table-of-contents)
 
-With the power of "argparse", the [main.py](https://github.com/Demfier/PsyNLP/blob/master/main.py) acts as the central script to run any of the pipelines, for any language and training data quality.
+With the power of `argparse`, the [main.py](https://github.com/Demfier/PsyNLP/blob/master/main.py) acts as the central script to run any of the pipelines, for any language and training data quality.
 
 
 - Help menu, for more details:
@@ -105,7 +109,7 @@ $ python3 main.py -vvv
 
   - `fca.py`: Contains implementations of PAC and other methods related to Formal Concept Analysis
   - `fst.py`: Contains generic Transducer methods, like states and arcs
-  - `oracle.py`: Contains the oracles that're used while computing the PAC basis in `fca.py` 
+  - `oracle.py`: Contains the oracles that're used while computing the PAC basis in `fca.py`
   - `ostia.py`: Implementation of the well-known OSTIA algorithm, that uses `fst.py`
 
 - Pipelines:
