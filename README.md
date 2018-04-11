@@ -17,6 +17,14 @@ PsyNLP is a Python library, that intends to handle morphological inflections for
 
 [(Back to ToC)](#table-of-contents)
 
+- Installing from PIP
+
+```sh
+$ pip3 install psynlp
+```
+
+- Setting up locally
+
 1. Clone the repository
 
 ```sh
