@@ -41,7 +41,7 @@
   <script type="text/javascript" src="sample.json"></script>>
   <script type="text/javascript">
 
-    /*
+/*
 This demo visualises wine and cheese pairings.
 */
 
@@ -52,14 +52,6 @@ $(function(){
   var easing = 'linear';
 
   var cy;
-
-  // get exported json from cytoscape desktop via ajax
-  // var graphP = $.ajax({
-  //   // url: 'https://gist.githubusercontent.com/maxkfranz/3d4d3c8eb808bd95bae7/raw', // wine-and-cheese.json
-  //   url: 'data.json',
-  //   type: 'GET',
-  //   dataType: 'json'
-  // });
 
   var graphP = JSON.parse(data);
 
@@ -355,7 +347,7 @@ $(function(){
         return str.match( q );
       }
 
-      var fields = ['name', 'NodeType', 'Country', 'Type', 'Milk'];
+      var fields = ['name', 'NodeType'];
 
       function anyFieldMatches( n ){
         for( var i = 0; i < fields.length; i++ ){

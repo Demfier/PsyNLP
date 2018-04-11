@@ -8,11 +8,11 @@ def test_fetch_accuray():
     Tests the ostia pipeline
     """
     languages = ['english', 'polish', 'bengali']
-    qualities = ['low', 'medium', 'high']
+    qualities = ['low', 'medium']
     accuracies = []
 
-    for language in languages:
-        for quality in qualities:
+    for quality in qualities:
+        for language in languages:
             accuracies.append((language, quality, ostia.fetch_accuracy(language=language, quality=quality)))
     print(accuracies)
     return True

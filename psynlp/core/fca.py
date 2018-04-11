@@ -8,6 +8,7 @@ For theory refer:
 > "Conceptual Exploration", Bernhard Ganter & Sergei Obiedkov
     - https://link.springer.com/content/pdf/10.1007%2F978-3-662-49291-8.pdf
 """
+import json
 import itertools
 import networkx as nx
 from ..core import oracle
@@ -641,3 +642,149 @@ class FCA(nx.Graph):
         The computed pac-basis for given concept lattice
         """
         return(self.horn1(is_member, oracle.is_approx_equivalent(is_member, self.attributes(), self.nqueries, self.attributes_extent, self.attributes_superset, self.is_model_of_implications, self.pn_ratio, self.max_pn_ratio, epsilon, delta)))
+
+    def enumerateConcepts(self):
+        concepts = {}
+        objects = self.objects()
+        objects_powerset = []
+
+        for i in range(len(objects)):
+            objects_powerset += list(itertools.combinations(objects, i + 1))
+
+        c_id = 0
+        for object_group in objects_powerset:
+            intent = self.objects_intent(object_group)
+            if len(intent) == 0:
+                continue
+            concepts[c_id] = {"intent": intent,
+                              "extent": object_group}
+            c_id += 1
+        return concepts
+
+    def convert2cytoscapejson(self):
+        conceptLatticeJson = {
+            "format_version": "1.0",
+            "generated_by": "cytoscape-3.2.0",
+            "target_cytoscapejs_version": "~2.1",
+            "data": {
+                "selected": True,
+                "__Annotations": [],
+                "shared_name": "ConceptLatticeNetwork",
+                "SUID": 52,
+                "name": "ConceptLatticeNetwork"
+                },
+            }
+        nodes = []
+        edges = []
+
+        attrIDmap = {}
+        # Add nodes to the json
+        o_top = 100  # top postion for objects
+        a_top = 100  # top position for attributes
+        node_id = 0
+        edge_id = 0
+        for (node_name, data) in self.nodes(data=True):
+            node = {}
+            data_type = data["type"]
+            node["data"] = {}
+            node["data"]["id"] = str(node_id)
+            node["data"]["selected"] = False
+            node["data"]["cytoscape_alias_list"] = [node_name]
+            node["data"]["canonicalName"] = node_name
+            node["data"]["Type"] = data_type
+            node["data"]["SUID"] = node_id
+            node["data"]["NodeType"] = data_type
+            node["data"]["name"] = node_name
+            node["data"]["shared_name"] = node_name
+            if data_type == 'object':
+                node["position"] = {"x": -500, "y": o_top}
+                o_top += 50
+            else:
+                node["position"] = {"x": 500, "y": a_top}
+                a_top += 50
+                attrIDmap[node_name] = node_id
+            node_id += 1
+            nodes.append(node)
+
+        # Add obj --> attr edges
+        for node in nodes:
+            if node['data']['NodeType'] == 'attribute':
+                continue
+            obj_name = node["data"]["name"]
+            attributes = self.objects_intent([obj_name])
+            obj_id = node["data"]["id"]
+            for attr in attributes:
+                attr_id = attrIDmap[attr]
+                edge = {}
+                edge["data"] = {}
+                edge["data"]["id"] = str(edge_id)
+                edge["data"]["source"] = str(attr_id)
+                edge["data"]["target"] = str(obj_id)
+                edge["data"]["selected"] = False
+                edge["data"]["canonicalName"] = "attribute {} (ao) object {}".format(attr, obj_name)
+                edge["data"]["SUID"] = edge_id
+                edge["data"]["name"] = "attribute {} (ao) object {}".format(attr, obj_name)
+                edge["data"]["interaction"] = "ao"
+                edge["data"]["share_interaction"] = "ao"
+                edge["data"]["shared_name"] = "attribute {} (ao) object {}".format(attr, obj_name)
+                edge["selected"] = False
+                edge_id += 1
+                edges.append(edge)
+
+        concepts = self.enumerateConcepts()
+        for concept in concepts.values():
+            i_node = {}  # intent node
+            e_node = {}  # extent node
+            i_node["data"], e_node["data"] = {}, {}
+
+            i_node["data"]["id"] = str(node_id)
+            i_node["data"]["SUID"] = node_id
+            node_id += 1
+            e_node["data"]["id"] = str(node_id)
+            e_node["data"]["SUID"] = node_id
+            node_id += 1
+
+            i_node["data"]["selected"], e_node["data"]["selected"] = False, False
+            i_node["data"]["cytoscape_alias_list"] = list(concept["intent"])
+            e_node["data"]["cytoscape_alias_list"] = list(concept["extent"])
+            i_node["data"]["canonicalName"] = ", ".join(list(concept["intent"]))
+            e_node["data"]["canonicalName"] = ", ".join(list(concept["extent"]))
+            i_node["data"]["Type"] = "Intent"
+            e_node["data"]["Type"] = "Extent"
+            i_node["data"]["NodeType"] = "IntentNode"
+            e_node["data"]["NodeType"] = "ExtentNode"
+            i_node["data"]["name"] = ", ".join(list(concept["intent"]))
+            i_node["data"]["shared_name"] = ", ".join(list(concept["intent"]))
+            e_node["data"]["name"] = ", ".join(list(concept["extent"]))
+            e_node["data"]["shared_name"] = ", ".join(list(concept["extent"]))
+
+            e_node["position"] = {"x": -500, "y": o_top}
+            i_node["position"] = {"x": 500, "y": a_top}
+
+            i_node["selected"], e_node["selected"] = False, False
+            nodes.append(i_node)
+            nodes.append(e_node)
+
+            # Add an edge from i_node to e_node
+            edge = {}
+            edge["data"] = {}
+            edge["data"]["id"] = str(edge_id)
+            i_id = i_node["data"]["id"]
+            e_id = e_node["data"]["id"]
+            edge["data"]["source"] = e_id
+            edge["data"]["target"] = i_id
+            edge["data"]["selected"] = False
+            edge["data"]["canonicalName"] = "extent {} (ie) intent {}".format(e_id, i_id)
+            edge["data"]["SUID"] = edge_id
+            edge["data"]["name"] = "intent {} (ie) extent {}".format(i_id, e_id)
+            edge["data"]["interaction"] = "ie"
+            edge["data"]["shared_interaction"] = "ie"
+            edge["data"]["name"] = "intent {} (ie) extent {}".format(i_id, e_id)
+            edge["selected"] = False
+            edge_id += 1
+            edges.append(edge)
+
+        conceptLatticeJson["elements"] = {"nodes": nodes, "edges": edges}
+        with open('visual/sample.json', 'w') as jout:
+            jout.write("data = '" + json.dumps(conceptLatticeJson) + "';")
+        return conceptLatticeJson
