@@ -1,4 +1,3 @@
-import pytest
 from ..psynlp.pipelines import deterministic
 from ..psynlp.helpers import builtins
 builtins.init_verbose(1)

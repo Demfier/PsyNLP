@@ -1,4 +1,3 @@
-import pytest
 from ..psynlp.pipelines import ostia
 from ..psynlp.helpers import builtins
 builtins.init_verbose(1)
