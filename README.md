@@ -7,7 +7,7 @@ PsyNLP is a Python library, that intends to handle morphological inflections for
 ### Table of Contents
 
 1. [Installation Guidelines](#installation-guidelines)
-2. [Usage](#usage)
+2. [Running the scripts](#running-the-scripts)
 3. [Visualizing a formal concept](#visualizing-a-formal-concept)
 4. [Repository structure](#repository-structure)
 5. [Running the tests](#running-the-tests)
@@ -48,7 +48,7 @@ Alternatively, you can also install the module from pip directly using the comma
 
 `pip3 install psynlp`
 
-### Usage
+### Running the scripts
 
 [(Back to ToC)](#table-of-contents)
 
@@ -103,6 +103,8 @@ $ python3 main.py -vvv
 ### Visualizing a formal concept
 
 [(Back to ToC)](#table-of-contents)
+
+![image](https://user-images.githubusercontent.com/17109060/38651955-79bc24ac-3e21-11e8-8db3-6b87314a7129.png)
 
 The `cytoscape` library has been used to visualize a formal concept. A sample notebook showing the visualization can be [seen here](visualize.ipynb).
 
