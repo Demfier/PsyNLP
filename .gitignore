@@ -3,6 +3,5 @@ cache*
 build/*
 dist/*
 *.egg-info
-*.ipynb
 visual/*.json
 visual/*.html

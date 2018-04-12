@@ -8,10 +8,11 @@ PsyNLP is a Python library, that intends to handle morphological inflections for
 
 1. [Installation Guidelines](#installation-guidelines)
 2. [Usage](#usage)
-3. [Repository structure](#repository-structure)
-4. [Running the tests](#running-the-tests)
-5. [Contribution Guidelines](#contribution-guidelines)
-6. [License](#license)
+3. [Visualizing a formal concept](#visualizing-a-formal-concept)
+4. [Repository structure](#repository-structure)
+5. [Running the tests](#running-the-tests)
+6. [Contribution Guidelines](#contribution-guidelines)
+7. [License](#license)
 
 ### Installation Guidelines
 
@@ -98,6 +99,45 @@ $ python3 main.py -vv
 # Verbose 3, print debug details for PAC and OSTIA
 $ python3 main.py -vvv
 ```
+
+### Visualizing a formal concept
+
+[(Back to ToC)](#table-of-contents)
+
+The `cytoscape` library has been used to visualize a formal concept. A sample notebook showing the visualization can be [seen here](visualize.ipynb).
+
+```sh
+# Show files in the visual/ directory
+$ ls visual/
+```
+
+```
+|
+|_ cytoscape.tmpl (The html template file)
+|_ style.cycss (The cytoscape css file)
+
+```
+
+- Before running the notebook:
+
+```sh
+# Go to visual/ directory
+$ cd visual/
+
+# Start the HTTP server on port 8000, from the visual/ directory
+$ python3 -m http.server -p 8000
+
+```
+
+
+- Now, run the notebook from the root directory (Do a `cd ~/..` if required):
+
+```sh
+# Open the jupyter notebook
+$ jupyter notebook
+```
+
+An interactive plot with zoom, search and filter features should appear on your `visualize.ipynb` notebook. If you'd like a html file, you'll also be able to see a `sample.html` and `sample.json` generated in the `visual/` directory.
 
 ### Repository structure
 
