@@ -1004,6 +1004,4 @@ class FCA(nx.Graph):
                     edges.append(edge)
 
         conceptLatticeJson["elements"] = {"nodes": nodes, "edges": edges}
-        with open('visual/sample.json', 'w') as jout:
-            jout.write("data = '" + json.dumps(conceptLatticeJson) + "';")
         return conceptLatticeJson

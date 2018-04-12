@@ -14,10 +14,9 @@ edge {
 }
 
 node {
-	width: 40;
-	height: 40;
-	font-size: 10;
-	font-weight: bold;
+	width: 50;
+	height: 50;
+	font-size: 8;
 	min-zoomed-font-size: 4;
 	content: data(name);
 	text-valign: center;
@@ -36,12 +35,14 @@ edge[interaction = "ao"] {
 	width: 4;
 }
 
-node[NodeType = "attribute"],
+node[NodeType = "attribute"] {
+	background-color: #b58900;
+	text-outline-color: #b58900;
+}
+
 node[NodeType = "IntentNode"] {
-	background-color: #FACD37;
-	text-outline-color: #FACD37;
-	width: mapData(Quality, 70, 100, 20, 50);
-	height: mapData(Quality, 70, 100, 20, 50);
+	background-color: #859900;
+	text-outline-color: #859900;
 }
 
 node[NodeType = "WhiteWine"] {
@@ -49,33 +50,48 @@ node[NodeType = "WhiteWine"] {
 	text-outline-color: white;
 }
 
-node[NodeType = "ExtentNode"],
-node[NodeType = "object"] {
-	background-color: #DE3128;
-	text-outline-color: #DE3128;
+node[NodeType = "ExtentNode"]{
+	background-color: #dc322f;
+	text-outline-color: #dc322f;	
 }
 
+node[NodeType = "object"] {
+	background-color: #cb4b16;
+	text-outline-color: #cb4b16;
+}
+
+edge[interaction = "ae"]
+{
+	line-color: #b58900;
+}
+
+
 edge[interaction = "ii"] {
-	line-color: #39FF14;
+	line-color: #859900;
 }
 
 edge[interaction = "ee"] {
-	line-color: #FFA500;
+	line-color: #dc322f;
 }
 
 edge[interaction = "eo"] {
-	line-color: #08E8DE;
+	line-color: #cb4b16;
 }
 
-edge[interaction = "ae"],
-edge[interaction = "ao"],
-edge[interaction = "io"],
+edge[interaction = "ao"]{
+	line-color: #fff;
+}
+
+edge[interaction = "io"]{
+	line-color: #cb4b16;
+}
+
 edge[interaction = "ie"] {
-	line-color: #ffdead;
+	line-color: #6c71c4;
 }
 
 edge[interaction = "ia"] {
-	line-color: #228B22;
+	line-color: #b58900;
 }
 
 node[NodeType = "Cider"] {
