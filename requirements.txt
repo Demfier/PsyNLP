@@ -3,3 +3,5 @@ pytest
 autopep8
 networkx
 argparse
+jinja2
+IPython
