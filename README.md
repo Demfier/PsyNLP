@@ -202,4 +202,4 @@ Your contributions are always welcome! Please have a look at the [contribution g
 
 [(Back to ToC)](#table-of-contents)
 
-MIT License 2018 - [Gaurav Sahu](https://github.com/Demfier/) and [Athitya Kumar](https://github.com/athityakumar/).
+MIT License 2018 - [Gaurav Sahu](https://github.com/Demfier/) and [Athitya Kumar](https://github.com/athityakumar/). For more information, please have a look at the [LICENSE](LICENSE.md) file.
