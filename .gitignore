@@ -5,3 +5,4 @@ dist/*
 *.egg-info
 visual/*.json
 visual/*.html
+*.ipynb_checkpoints/
